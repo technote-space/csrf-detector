@@ -8,7 +8,7 @@
  * @link https://technote.space
  */
 
-if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
+if ( ! defined( 'CSRF_DETECTOR' ) ) {
 	exit;
 }
 
@@ -16,5 +16,26 @@ return [
 
 	// suppress setting help contents
 	'suppress_setting_help_contents' => true,
+
+	// log level (for developer)
+	'log_level'                      => [
+		'error' => [
+			'is_valid_log'  => false,
+			'is_valid_mail' => false,
+		],
+		'info'  => [
+			'is_valid_log'  => false,
+			'is_valid_mail' => false,
+		],
+		'csrf'  => [
+			'is_valid_log'  => true,
+			'is_valid_mail' => true,
+			'filters'       => [
+				'csrf_mail_to',
+			],
+		],
+		// set default level
+		''      => 'info',
+	],
 
 ];
