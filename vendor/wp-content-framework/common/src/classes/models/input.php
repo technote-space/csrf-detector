@@ -2,9 +2,10 @@
 /**
  * WP_Framework_Common Classes Models Input
  *
- * @version 0.0.1
+ * @version 0.0.4
  * @author technote-space
  * @since 0.0.1
+ * @since 0.0.4 Changed: postの判定修正 (#3)
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -185,12 +186,15 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
+	 * @since 0.0.4 #3
 	 * @return bool
 	 */
 	public function is_post() {
 		return ! in_array( $this->method(), [
 			'GET',
 			'HEAD',
+			'TRACE',
+			'OPTIONS',
 		] );
 	}
 
