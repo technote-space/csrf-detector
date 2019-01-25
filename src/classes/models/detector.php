@@ -52,14 +52,11 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_admin_validity() {
-		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
+		if ( ! $this->check( true ) ) {
 			return;
 		}
 		global $plugin_page;
 		if ( ! isset( $plugin_page ) ) {
-			return;
-		}
-		if ( $this->apply_filters( 'check_only_post' ) && ! $this->app->input->is_post() ) {
 			return;
 		}
 		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
@@ -76,10 +73,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_front_validity() {
-		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
-			return;
-		}
-		if ( $this->apply_filters( 'check_only_admin' ) ) {
+		if ( $this->check( false ) ) {
 			return;
 		}
 		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
@@ -93,22 +87,35 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_misc_validity() {
-		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
+		if ( $this->check( false ) ) {
 			return;
 		}
 		if ( $this->app->utility->definedv( 'DOING_CRON' ) || $this->app->utility->definedv( 'WP_ADMIN' ) || $this->app->utility->definedv( 'WP_USE_THEMES' ) ) {
-			return;
-		}
-		if ( $this->apply_filters( 'check_only_admin' ) ) {
-			return;
-		}
-		if ( $this->apply_filters( 'check_only_post' ) && ! $this->app->input->is_post() ) {
 			return;
 		}
 		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
 		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
 			$this->_is_valid_detector = false;
 		}
+	}
+
+	/**
+	 * @param bool $is_admin
+	 *
+	 * @return bool
+	 */
+	private function check( $is_admin ) {
+		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
+			return false;
+		}
+		if ( ! $is_admin && $this->apply_filters( 'check_only_admin' ) ) {
+			return false;
+		}
+		if ( $this->apply_filters( 'check_only_post' ) && ! $this->app->input->is_post() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
