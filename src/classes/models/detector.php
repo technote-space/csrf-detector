@@ -59,6 +59,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( ! isset( $plugin_page ) ) {
 			return;
 		}
+
 		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
 		if ( ! $this->_is_valid_detector ) {
 			$this->app->add_message( 'other plugin or theme has defined function [wp_verify_nonce]', 'error', true );
@@ -69,30 +70,19 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
-	 * check front validity
+	 * check not admin validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function check_front_validity() {
-		if ( $this->check( false ) ) {
+	private function check_not_admin_validity() {
+		if ( ! $this->check( false ) ) {
 			return;
 		}
-		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
-		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
-			$this->_is_valid_detector = false;
+		if ( ! $this->app->utility->definedv( 'WP_USE_THEMES' ) ) {
+			if ( $this->app->utility->definedv( 'DOING_CRON' ) || $this->app->utility->definedv( 'WP_ADMIN' ) ) {
+				return;
+			}
 		}
-	}
 
-	/**
-	 * check misc validity
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function check_misc_validity() {
-		if ( $this->check( false ) ) {
-			return;
-		}
-		if ( $this->app->utility->definedv( 'DOING_CRON' ) || $this->app->utility->definedv( 'WP_ADMIN' ) || $this->app->utility->definedv( 'WP_USE_THEMES' ) ) {
-			return;
-		}
 		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
 		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
 			$this->_is_valid_detector = false;
@@ -125,14 +115,16 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_query( $query ) {
+		if ( preg_match( '/^SHOW FULL COLUMNS FROM\s/', $query ) ) {
+			return $query;
+		}
 		$ignore              = $this->_ignore_check;
 		$this->_ignore_check = false;
-
 		if ( ! $this->_is_valid_detector || $ignore ) {
 			return $query;
 		}
 
-		if ( preg_match( $this->get_check_pattern(), $query ) ) {
+		if ( @preg_match( $this->get_check_pattern(), $query ) ) {
 			$this->detect_db_update( $query );
 		}
 
@@ -174,7 +166,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			return false;
 		}
 
-		return preg_match( $pattern, $option ) > 0;
+		return @preg_match( $pattern, $option ) > 0;
 	}
 
 	/**
@@ -218,10 +210,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			}
 			$this->_is_valid_detector = false;
 
-			$mail = $this->apply_filters( 'alert_mail_to' );
-			if ( ! empty( $mail ) ) {
-				$mail = $this->app->utility->explode( $mail );
-			}
 			$this->app->log( 'csrf detected', [
 				'target'    => $target,
 				'query'     => $query,

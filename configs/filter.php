@@ -15,25 +15,22 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 return [
 
 	'\Csrf_Detector\Classes\Models\Detector' => [
-		'admin_init'            => [
+		'admin_init'    => [
 			'check_admin_validity' => [ 1 ],
 		],
-		'template_redirect'     => [
-			'check_front_validity' => [ 1 ],
+		'init'          => [
+			'check_not_admin_validity' => [ 9 ],
 		],
-		'wp_loaded'             => [
-			'check_misc_validity' => [ 1 ],
-		],
-		'query'                 => [
+		'query'         => [
 			'check_query' => [],
 		],
-		'update_option'         => [
+		'update_option' => [
 			'update_option' => [],
 		],
-		'add_option'            => [
+		'add_option'    => [
 			'add_option' => [],
 		],
-		'delete_option'         => [
+		'delete_option' => [
 			'delete_option' => [],
 		],
 	],
