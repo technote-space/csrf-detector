@@ -54,8 +54,8 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private function check_admin_validity() {
 		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
 			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
-			$this->app->add_message( 'other plugin or theme has defined function [wp_verify_nonce],', 'error', true );
-			$this->app->add_message( 'so [CSRF Detector] is not available.', 'error', true );
+			$this->app->add_message( '[wp_verify_nonce] function has already been defined by other plugin or theme', 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
 
 			return;
 		}
@@ -70,7 +70,9 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		$this->_is_valid_detector = true;
 		if ( empty( $this->get_check_pattern() ) ) {
 			$this->_is_valid_detector = false;
-			$this->app->add_message( sprintf( $this->translate( 'check query pattern is invalid [%s]' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( sprintf( $this->translate( '[%s] is invalid: [%s]' ), $this->translate( 'Target commands' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
 		}
 	}
 
@@ -222,7 +224,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			], 'csrf' );
 			$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
 			if ( $this->apply_filters( 'shutdown_if_detected' ) ) {
-				\WP_Framework::wp_die( [ $this->translate( 'csrf detected' ), $query ], __FILE__, __LINE__ );
+				\WP_Framework::wp_die( [ $this->translate( 'CSRF detected' ), $target, $query ], __FILE__, __LINE__ );
 			}
 		}
 	}

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: csrf-detector\n"
 "POT-Creation-Date: 2018-07-01 17:47+0900\n"
-"PO-Revision-Date: 2019-01-28 00:30+0900\n"
+"PO-Revision-Date: 2019-01-28 01:46+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -48,3 +48,18 @@ msgstr "POSTのみを対象とするかどうか"
 
 msgid "Check only admin"
 msgstr "管理画面のみを対象とするかどうか"
+
+msgid "<h3>CSRF Detector</h3>"
+msgstr "<h3>CSRF Detector</h3>"
+
+msgid "[wp_verify_nonce] function has already been defined by other plugin or theme"
+msgstr "[wp_verify_nonce] 関数がすでに他のプラグインやテーマによって定義されています"
+
+msgid "[%s] is invalid: [%s]"
+msgstr "[%s]が有効な値ではありません："
+
+msgid "so [CSRF Detector] is not available"
+msgstr "そのため [CSRF Detector] は利用できません"
+
+msgid "CSRF detected"
+msgstr "CSRFを検知しました"
