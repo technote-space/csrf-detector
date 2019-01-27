@@ -67,6 +67,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			return;
 		}
 
+		$this->_is_valid_detector = true;
 		if ( empty( $this->get_check_pattern() ) ) {
 			$this->_is_valid_detector = false;
 			$this->app->add_message( sprintf( $this->translate( 'check query pattern is invalid [%s]' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
