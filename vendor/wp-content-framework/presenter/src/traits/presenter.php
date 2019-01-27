@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -542,25 +541,9 @@ trait Presenter {
 	 * @return bool
 	 */
 	public function enqueue_style( $handle, $file, array $depends = [], $ver = false, $media = 'all', $dir = 'css' ) {
-		$path    = $dir . DS . $file;
-		$result  = false;
-		$_handle = $handle;
-		$index   = 0;
-		foreach ( $this->get_check_assets_dirs( true ) as $_dir => $_url ) {
-			$_dir = rtrim( $_dir, DS . '/' );
-			if ( file_exists( $_dir . DS . $path ) && is_file( $_dir . DS . $path ) ) {
-				wp_enqueue_style( $handle, $_url . '/' . $dir . '/' . $file, $depends, $ver, $media );
-
-				if ( ! $this->app->is_theme ) {
-					return true;
-				}
-				$result = true;
-				$handle = "{$_handle}-{$index}";
-				$index ++;
-			}
-		}
-
-		return $result;
+		return $this->enqueue_assets( $handle, $file, $dir, function ( $handle, $path ) use ( $depends, $ver, $media ) {
+			wp_enqueue_style( $handle, $path, $depends, $ver, $media );
+		} );
 	}
 
 	/**
@@ -574,6 +557,20 @@ trait Presenter {
 	 * @return bool
 	 */
 	public function enqueue_script( $handle, $file, array $depends = [], $ver = false, $in_footer = true, $dir = 'js' ) {
+		return $this->enqueue_assets( $handle, $file, $dir, function ( $handle, $path ) use ( $depends, $ver, $in_footer ) {
+			wp_enqueue_script( $handle, $path, $depends, $ver, $in_footer );
+		} );
+	}
+
+	/**
+	 * @param string $handle
+	 * @param string $file
+	 * @param string $dir
+	 * @param callable $enqueue
+	 *
+	 * @return bool
+	 */
+	private function enqueue_assets( $handle, $file, $dir, $enqueue ) {
 		$path    = $dir . DS . $file;
 		$result  = false;
 		$_handle = $handle;
@@ -581,7 +578,7 @@ trait Presenter {
 		foreach ( $this->get_check_assets_dirs( true ) as $_dir => $_url ) {
 			$_dir = rtrim( $_dir, DS . '/' );
 			if ( file_exists( $_dir . DS . $path ) && is_file( $_dir . DS . $path ) ) {
-				wp_enqueue_script( $handle, $_url . '/' . $dir . '/' . $file, $depends, $ver, $in_footer );
+				$enqueue( $handle, $_url . '/' . $dir . '/' . $file );
 
 				if ( ! $this->app->is_theme ) {
 					return true;

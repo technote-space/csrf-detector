@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -20,8 +19,8 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Class Base
  * @package WP_Framework_Admin\Classes\Controllers\Admin
  */
-abstract class Base extends \WP_Framework_Controller\Classes\Controllers\Base implements \WP_Framework_Admin\Interfaces\Controller\Admin, \WP_Framework_Controller\Interfaces\Admin {
+abstract class Base extends \WP_Framework_Controller\Classes\Controllers\Base implements \WP_Framework_Admin\Interfaces\Controller\Admin, \WP_Framework_Admin\Interfaces\Admin {
 
-	use \WP_Framework_Admin\Traits\Controller\Admin, \WP_Framework_Controller\Traits\Admin, \WP_Framework_Admin\Traits\Package;
+	use \WP_Framework_Admin\Traits\Controller\Admin, \WP_Framework_Admin\Traits\Admin, \WP_Framework_Admin\Traits\Package;
 
 }

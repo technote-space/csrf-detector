@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -77,7 +76,7 @@ class Define implements \WP_Framework_Core\Interfaces\Singleton {
 		$this->plugin_name = $this->app->plugin_name;
 		$this->plugin_file = $this->app->plugin_file;
 
-		$this->plugin_namespace = ucwords( $this->plugin_name, '_' );
+		$this->plugin_namespace = ucwords( strtolower( $this->plugin_name ), '_' );
 		$this->plugin_dir       = dirname( $this->plugin_file );
 		$this->plugin_dir_name  = basename( $this->plugin_dir );
 		$this->plugin_base_name = $this->app->is_theme ? 'theme/' . $this->plugin_dir : plugin_basename( $this->plugin_file );

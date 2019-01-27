@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -27,12 +26,12 @@ return [
 						return ! empty( $app->utility->definedv( 'WP_DEBUG' ) );
 					},
 				],
-				'save___log_term'        => [
+				'save_log_term'          => [
 					'label'   => 'Save log term (set 0 to prevent save)',
 					'default' => 30 * DAY_IN_SECONDS,
 					'min'     => 0,
 				],
-				'delete___log_interval'  => [
+				'delete_log_interval'    => [
 					'label'   => 'Delete log interval',
 					'default' => DAY_IN_SECONDS,
 					'min'     => MINUTE_IN_SECONDS,

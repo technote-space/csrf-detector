@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -39,6 +38,16 @@ trait Singleton {
 	 * @var \WP_Framework $app
 	 */
 	protected $app;
+
+	/**
+	 * @var bool $_initialize_called
+	 */
+	private $_initialize_called = false;
+
+	/**
+	 * @var bool $_initialized_called
+	 */
+	private $_initialized_called = false;
 
 	/**
 	 * @var string $_class_name
@@ -76,9 +85,7 @@ trait Singleton {
 					$app->uninstall->add_uninstall( [ $instance, 'uninstall' ], $instance->get_uninstall_priority() );
 				}
 				self::$_instances[ $key ][ $class ] = $instance;
-				$instance->set_allowed_access( true );
-				$instance->initialize();
-				$instance->set_allowed_access( false );
+				$instance->call_initialize();
 			}
 		}
 
@@ -112,10 +119,10 @@ trait Singleton {
 		$this->_class_name = $reflection->getName();
 		if ( $this instanceof \WP_Framework_Core\Interfaces\Hook ) {
 			if ( $app->has_initialized() ) {
-				$this->initialized();
+				$this->call_initialized();
 			} else {
 				add_action( $this->get_filter_prefix() . 'app_initialized', function () {
-					$this->initialized();
+					$this->call_initialized();
 				} );
 			}
 		}
@@ -133,6 +140,31 @@ trait Singleton {
 	 */
 	protected function initialized() {
 
+	}
+
+	/**
+	 * call initialize
+	 */
+	private function call_initialize() {
+		if ( $this->_initialize_called || ! $this->app->is_enough_version() ) {
+			return;
+		}
+		$this->_initialize_called = true;
+		$this->set_allowed_access( true );
+		$this->initialize();
+		$this->set_allowed_access( false );
+	}
+
+	/**
+	 * call initialized
+	 */
+	private function call_initialized() {
+		$this->call_initialize();
+		if ( $this->_initialized_called || ! $this->app->is_enough_version() ) {
+			return;
+		}
+		$this->_initialized_called = true;
+		$this->initialized();
 	}
 
 	/**

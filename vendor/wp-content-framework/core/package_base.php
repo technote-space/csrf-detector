@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -109,7 +108,9 @@ abstract class Package_Base {
 	/**
 	 * initialize
 	 */
-	protected abstract function initialize();
+	protected function initialize() {
+
+	}
 
 	/**
 	 * @return int
@@ -125,19 +126,25 @@ abstract class Package_Base {
 
 	/**
 	 * @param $name
+	 * @param \WP_Framework $app
 	 *
 	 * @return array
 	 */
-	public function get_config( $name ) {
+	public function get_config( $name, $app = null ) {
 		if ( ! isset( $this->_configs[ $name ] ) ) {
 			if ( ! in_array( $name, $this->get_configs() ) ) {
 				$this->_configs[ $name ] = [];
 			} else {
-				$this->_configs[ $name ] = $this->load_config_file( $name );
+				$this->_configs[ $name ] = $this->load_package_config( $name );
 			}
 		}
 
-		return $this->_configs[ $name ];
+		$config = $this->_configs[ $name ];
+		if ( $app ) {
+			$config = array_replace_recursive( $config, $this->load_plugin_config( $name, $app ) );
+		}
+
+		return $config;
 	}
 
 	/**
@@ -244,8 +251,32 @@ abstract class Package_Base {
 	 *
 	 * @return array
 	 */
-	private function load_config_file( $name ) {
-		$path = $this->get_dir() . DS . 'configs' . DS . $name . '.php';
+	private function load_package_config( $name ) {
+		$package_config = $this->load_config_file( $this->get_dir() . DS . 'configs', $name );
+
+		return apply_filters( 'wp_framework/load_config', $package_config, $name, $package_config );
+	}
+
+	/**
+	 * @param string $name
+	 * @param \WP_Framework $app
+	 *
+	 * @return array
+	 */
+	private function load_plugin_config( $name, $app ) {
+		$plugin_config = $this->load_config_file( $app->plugin_dir . DS . 'configs' . DS . $name, $this->get_package() );
+
+		return apply_filters( 'wp_framework/load_config', $plugin_config, $name, $plugin_config, $app );
+	}
+
+	/**
+	 * @param string $dir
+	 * @param string $name
+	 *
+	 * @return array
+	 */
+	private function load_config_file( $dir, $name ) {
+		$path = rtrim( $dir, DS ) . DS . $name . '.php';
 		if ( ! file_exists( $path ) ) {
 			return [];
 		}
@@ -286,22 +317,22 @@ abstract class Package_Base {
 	 * @return array
 	 */
 	public function get_assets_settings( $allow_multiple = false ) {
-		if ( 'common' === $this->_package ) {
+		if ( 'presenter' === $this->_package ) {
 			return [ $this->get_assets_dir() => $this->get_assets_url() ];
 		}
 
-		$common = $this->_app->get_package_instance( 'common' );
+		$presenter = $this->_app->get_package_instance( 'presenter' );
 		if ( ! $this->is_valid_assets() ) {
-			return $common->get_assets_settings();
+			return $presenter->get_assets_settings();
 		}
 
 		if ( $allow_multiple ) {
-			$settings                            = $common->get_assets_settings();
+			$settings                            = $presenter->get_assets_settings();
 			$settings[ $this->get_assets_dir() ] = $this->get_assets_url();
 		} else {
 			$settings                            = [];
 			$settings[ $this->get_assets_dir() ] = $this->get_assets_url();
-			foreach ( $common->get_assets_settings() as $k => $v ) {
+			foreach ( $presenter->get_assets_settings() as $k => $v ) {
 				$settings[ $k ] = $v;
 			}
 		}
@@ -313,18 +344,18 @@ abstract class Package_Base {
 	 * @return array
 	 */
 	public function get_views_dirs() {
-		if ( 'common' === $this->_package ) {
+		if ( 'presenter' === $this->_package ) {
 			return [ $this->get_views_dir() ];
 		}
 
-		$common = $this->_app->get_package_instance( 'common' );
+		$presenter = $this->_app->get_package_instance( 'presenter' );
 		if ( ! $this->is_valid_view() ) {
-			return $common->get_views_dirs();
+			return $presenter->get_views_dirs();
 		}
 
 		$dirs   = [];
 		$dirs[] = $this->get_views_dir();
-		foreach ( $common->get_views_dirs() as $dir ) {
+		foreach ( $presenter->get_views_dirs() as $dir ) {
 			$dirs[] = $dir;
 		}
 

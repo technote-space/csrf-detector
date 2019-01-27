@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -20,6 +19,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Trait Validate
  * @package WP_Framework_Core\Traits\Helper
  * @property \WP_Framework $app
+ * @mixin \WP_Framework_Core\Traits\Translate
  */
 trait Validate {
 
@@ -265,6 +265,9 @@ trait Validate {
 	 * @return bool|\WP_Error
 	 */
 	protected function validate_exists( $var, $table, $id = 'id', $field = '*' ) {
+		if ( ! $this->app->is_valid_package( 'db' ) ) {
+			return new \WP_Error( 400, $this->translate( 'DB module is not available.' ) );
+		}
 		$validate = $this->validate_positive_int( $var );
 		if ( true === $validate ) {
 			if ( $this->app->db->select_count( $table, $field, [

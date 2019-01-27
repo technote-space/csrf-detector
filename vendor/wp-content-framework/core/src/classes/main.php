@@ -2,14 +2,8 @@
 /**
  * WP_Framework_Core Classes Main
  *
- * @version 0.0.4
+ * @version 0.0.8
  * @author technote-space
- * @since 0.0.1
- * @since 0.0.2 Added: send_mail の追加 (#4)
- * @since 0.0.4 Fixed: 複数プラグインでの利用への対応 (#8)
- * @since 0.0.4 Changed: 利用できないプロパティへのアクセスの動作変更 (#9)
- * @since 0.0.5 Improved: クラス読み込みの改善 (#13)
- * @since 0.0.5 Fixed: プラグインの名前空間のクラスが読みこまれない (#14)
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -30,7 +24,6 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Common\Classes\Models\Filter $filter
  * @property \WP_Framework_Common\Classes\Models\Uninstall $uninstall
  * @property \WP_Framework_Common\Classes\Models\Utility $utility
- * @property \WP_Framework_Common\Classes\Models\Upgrade $upgrade
  * @property \WP_Framework_Common\Classes\Models\Option $option
  * @property \WP_Framework_Common\Classes\Models\User $user
  * @property \WP_Framework_Common\Classes\Models\Input $input
@@ -38,6 +31,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Log\Classes\Models\Log $log
  * @property \WP_Framework_Admin\Classes\Models\Admin $admin
  * @property \WP_Framework_Api\Classes\Models\Api $api
+ * @property \WP_Framework_Presenter\Classes\Models\Drawer $drawer
  * @property \WP_Framework_Presenter\Classes\Models\Minify $minify
  * @property \WP_Framework_Mail\Classes\Models\Mail $mail
  * @property \WP_Framework_Test\Classes\Models\Test $test
@@ -47,6 +41,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Session\Classes\Models\Session $session
  * @property \WP_Framework_Social\Classes\Models\Social $social
  * @property \WP_Framework_Post\Classes\Models\Post $post
+ * @property \WP_Framework_Upgrade\Classes\Models\Upgrade $upgrade
  */
 class Main {
 
@@ -82,12 +77,16 @@ class Main {
 	private $_properties;
 
 	/**
+	 * @var array $_target_package
+	 */
+	private $_target_package;
+
+	/**
 	 * @var array $_property_instances
 	 */
 	private $_property_instances = [];
 
 	/**
-	 * @since 0.0.5 #13
 	 * @var string $_namespace_prefix
 	 */
 	private $_namespace_prefix = WP_CONTENT_FRAMEWORK . '_';
@@ -141,16 +140,23 @@ class Main {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		$this->_plugin_data = $this->app->is_theme ? wp_get_theme() : get_plugin_data( $this->app->plugin_file, false, false );
-		$this->_properties  = [];
+		$this->_plugin_data    = $this->app->is_theme ? wp_get_theme() : get_plugin_data( $this->app->plugin_file, false, false );
+		$this->_properties     = [];
+		$this->_target_package = [];
 		foreach ( $this->app->get_packages() as $package ) {
-			$this->_properties = array_merge( $this->_properties, $package->get_config( 'map' ) );
+			$map               = $package->get_config( 'map', $this->app );
+			$this->_properties = array_merge( $this->_properties, $map );
+			foreach ( $map as $name => $class ) {
+				$class = ltrim( $class, '\\' );
+				if ( ! is_int( $name ) ) {
+					$this->_properties[ $name ] = $class;
+				}
+				$this->_target_package[ $class ] = $package->get_package();
+			}
 		}
 	}
 
 	/**
-	 * @since 0.0.4 #9
-	 *
 	 * @param string $name
 	 *
 	 * @return \WP_Framework_Core\Interfaces\Singleton
@@ -182,18 +188,17 @@ class Main {
 	 * @return bool
 	 */
 	public function load_class( $class ) {
-		$class = ltrim( $class, '\\' );
 		$dirs  = null;
-
+		$class = ltrim( $class, '\\' );
 		if ( isset( $this->_property_instances[ $this->_properties['define'] ] ) && preg_match( "#\A{$this->define->plugin_namespace}#", $class ) ) {
 			$class = preg_replace( "#\A{$this->define->plugin_namespace}#", '', $class );
 			$dirs  = $this->define->plugin_src_dir;
-		} else {
-			if ( preg_match( "#\A{$this->_namespace_prefix}#", $class ) ) {
-				foreach ( $this->app->get_packages() as $package ) {
-					if ( $package->load_class( $class ) ) {
-						return true;
-					}
+		} elseif ( isset( $this->_target_package[ $class ] ) ) {
+			$this->app->get_package_instance( $this->_target_package[ $class ] )->load_class( $class );
+		} elseif ( preg_match( "#\A{$this->_namespace_prefix}#", $class ) ) {
+			foreach ( $this->app->get_packages() as $package ) {
+				if ( $package->load_class( $class ) ) {
+					return true;
 				}
 			}
 		}
@@ -364,8 +369,6 @@ class Main {
 	}
 
 	/**
-	 * @since 0.0.2 #4
-	 *
 	 * @param string $to
 	 * @param string $subject
 	 * @param string|array $body
@@ -379,6 +382,110 @@ class Main {
 		}
 
 		return $this->mail->send( $to, $subject, $body, $text );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param bool $echo
+	 * @param bool $error
+	 * @param bool $remove_nl
+	 *
+	 * @return string
+	 */
+	public function get_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $echo = false, $error = true, $remove_nl = false ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return '';
+		}
+
+		$this->drawer->set_package( $instance );
+
+		return $this->drawer->get_view( $name, $args, $echo, $error, $remove_nl );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param int $priority
+	 */
+	public function add_script_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $priority = 10 ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->add_script_view( $name, $args, $priority );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param int $priority
+	 */
+	public function add_style_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $priority = 10 ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->add_style_view( $name, $args, $priority );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $file
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param string $media
+	 * @param string $dir
+	 */
+	public function enqueue_style( \WP_Framework_Core\Interfaces\Package $instance, $handle, $file, array $depends = [], $ver = false, $media = 'all', $dir = 'css' ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->enqueue_style( $handle, $file, $depends, $ver, $media, $dir );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $file
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param bool $in_footer
+	 * @param string $dir
+	 */
+	public function enqueue_script( \WP_Framework_Core\Interfaces\Package $instance, $handle, $file, array $depends = [], $ver = false, $in_footer = true, $dir = 'js' ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->enqueue_script( $handle, $file, $depends, $ver, $in_footer, $dir );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $name
+	 * @param array $data
+	 *
+	 * @return bool
+	 */
+	public function localize_script( \WP_Framework_Core\Interfaces\Package $instance, $handle, $name, array $data ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return false;
+		}
+
+		$this->drawer->set_package( $instance );
+
+		return $this->drawer->localize_script( $handle, $name, $data );
 	}
 
 	/**

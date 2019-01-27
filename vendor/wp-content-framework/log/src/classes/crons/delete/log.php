@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -32,7 +31,7 @@ class Log extends \WP_Framework_Cron\Classes\Crons\Base {
 			return - 1;
 		}
 
-		return $this->apply_filters( 'delete___log_interval' );
+		return $this->apply_filters( 'delete_log_interval' );
 	}
 
 	/**

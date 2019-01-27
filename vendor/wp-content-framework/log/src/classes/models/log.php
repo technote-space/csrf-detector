@@ -4,11 +4,6 @@
  *
  * @version 0.0.5
  * @author technote-space
- * @since 0.0.1
- * @since 0.0.2 Fixed: ログのメール送信動作の修正 (#1)
- * @since 0.0.2 Changed: 有効かどうかの設定を単純化 (#2)
- * @since 0.0.5 Improved: filter による メール送信先の追加 (#6)
- * @since 0.0.5 Improved: array以外を指定した場合の動作改善 (#7)
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -46,8 +41,8 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function setup_settings() {
 		if ( ! $this->is_valid() ) {
-			$this->app->setting->remove_setting( 'save___log_term' );
-			$this->app->setting->remove_setting( 'delete___log_interval' );
+			$this->app->setting->remove_setting( 'save_log_term' );
+			$this->app->setting->remove_setting( 'delete_log_interval' );
 			$this->app->setting->remove_setting( 'capture_shutdown_error' );
 		}
 	}
@@ -150,16 +145,13 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 		if ( empty( $log_level[ $level ]['is_valid_log'] ) ) {
 			return;
 		}
-		if ( $this->apply_filters( 'save___log_term' ) <= 0 ) {
+		if ( $this->apply_filters( 'save_log_term' ) <= 0 ) {
 			return;
 		}
 		$this->app->db->insert( '__log', $data );
 	}
 
 	/**
-	 * @since 0.0.2 #1
-	 * @since 0.0.5 #6, #7
-	 *
 	 * @param string $level
 	 * @param array $log_level
 	 * @param string $message
@@ -236,7 +228,7 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 	 */
 	public function delete_old_logs() {
 		$count = 0;
-		$term  = $this->apply_filters( 'save___log_term' );
+		$term  = $this->apply_filters( 'save_log_term' );
 		foreach (
 			$this->app->db->select( '__log', [
 				'created_at' => [ '<', 'NOW() - INTERVAL ' . (int) $term . ' SECOND', true ],

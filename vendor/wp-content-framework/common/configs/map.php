@@ -4,7 +4,6 @@
  *
  * @version 0.0.1
  * @author technote-space
- * @since 0.0.1
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -22,7 +21,6 @@ return [
 	'filter'    => '\WP_Framework_Common\Classes\Models\Filter',
 	'uninstall' => '\WP_Framework_Common\Classes\Models\Uninstall',
 	'utility'   => '\WP_Framework_Common\Classes\Models\Utility',
-	'upgrade'   => '\WP_Framework_Common\Classes\Models\Upgrade',
 	'option'    => '\WP_Framework_Common\Classes\Models\Option',
 	'user'      => '\WP_Framework_Common\Classes\Models\User',
 	'input'     => '\WP_Framework_Common\Classes\Models\Input',
