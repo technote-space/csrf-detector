@@ -219,10 +219,10 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 				'query'     => $query,
 				'backtrace' => $backtrace,
 			], 'csrf' );
+			$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
 			if ( $this->apply_filters( 'shutdown_if_detected' ) ) {
 				\WP_Framework::wp_die( [ $this->translate( 'csrf detected' ), $query ], __FILE__, __LINE__ );
 			}
-			$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
 		}
 	}
 
