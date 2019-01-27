@@ -42,7 +42,7 @@ return [
 				'check_only_post'       => [
 					'label'   => 'Check only post',
 					'type'    => 'bool',
-					'default' => true,
+					'default' => false,
 				],
 				'check_only_admin'      => [
 					'label'   => 'Check only admin',
