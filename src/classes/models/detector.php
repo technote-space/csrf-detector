@@ -52,6 +52,13 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_admin_validity() {
+		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( 'other plugin or theme has defined function [wp_verify_nonce],', 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available.', 'error', true );
+
+			return;
+		}
 		if ( ! $this->check( true ) ) {
 			return;
 		}
@@ -60,10 +67,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			return;
 		}
 
-		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
-		if ( ! $this->_is_valid_detector ) {
-			$this->app->add_message( 'other plugin or theme has defined function [wp_verify_nonce]', 'error', true );
-		} elseif ( empty( $this->get_check_pattern() ) ) {
+		if ( empty( $this->get_check_pattern() ) ) {
 			$this->_is_valid_detector = false;
 			$this->app->add_message( sprintf( $this->translate( 'check query pattern is invalid [%s]' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
 		}
