@@ -14,6 +14,9 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 
 return [
 
+	// update
+	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/develop/update.json',
+
 	// suppress setting help contents
 	'suppress_setting_help_contents' => true,
 

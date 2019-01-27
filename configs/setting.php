@@ -15,7 +15,7 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 return [
 
 	'10' => [
-		'Csrf' => [
+		'CSRF' => [
 			'10' => [
 				'is_valid_detect'       => [
 					'label'   => 'Validity',
@@ -23,7 +23,7 @@ return [
 					'default' => true,
 				],
 				'shutdown_if_detected'  => [
-					'label'   => 'Shutdown validity ',
+					'label'   => 'Shutdown validity',
 					'type'    => 'bool',
 					'default' => true,
 				],
