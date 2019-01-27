@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: csrf-detector\n"
 "POT-Creation-Date: 2018-07-01 17:47+0900\n"
-"PO-Revision-Date: 2019-01-20 21:28+0900\n"
+"PO-Revision-Date: 2019-01-28 00:30+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -24,3 +24,27 @@ msgstr "このプラグインはCSRFを検出します"
 
 msgid "Dashboard"
 msgstr "ダッシュボード"
+
+msgid "CSRF"
+msgstr "CSRF"
+
+msgid "Validity"
+msgstr "有効かどうか"
+
+msgid "Shutdown validity"
+msgstr "検知したときに処理を終了させるかどうか"
+
+msgid "Mail to"
+msgstr "検知したときのメール送信先（カンマ区切りで複数指定可）"
+
+msgid "Target commands"
+msgstr "監視するSQLコマンド"
+
+msgid "Ignore option pattern"
+msgstr "除外するオプションのパターン"
+
+msgid "Check only post"
+msgstr "POSTのみを対象とするかどうか"
+
+msgid "Check only admin"
+msgstr "管理画面のみを対象とするかどうか"
