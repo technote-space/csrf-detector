@@ -43,9 +43,12 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader {
 		if ( ! $this->is_required_upgrade() ) {
 			return;
 		}
+		$this->do_action( 'start_upgrade' );
 		$last_version = $this->get_last_upgrade_version();
 		$this->set_last_upgrade_version();
 		if ( empty( $last_version ) ) {
+			$this->do_action( 'finished_upgrade' );
+
 			return;
 		}
 
@@ -79,6 +82,8 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader {
 			$this->app->log( sprintf( $this->translate( 'total upgrade process count: %d' ), $count ) );
 
 			if ( empty( $upgrades ) ) {
+				$this->do_action( 'finished_upgrade' );
+
 				return;
 			}
 
@@ -92,6 +97,7 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader {
 		} catch ( \Exception $e ) {
 			$this->app->log( $e );
 		}
+		$this->do_action( 'finished_upgrade' );
 	}
 
 	/**

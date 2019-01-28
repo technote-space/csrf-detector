@@ -353,9 +353,11 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 		if ( ! $this->need_to_update() ) {
 			return;
 		}
+		$this->do_action( 'start_db_update' );
 		$this->update_db_version();
 
 		if ( empty( $this->table_defines ) ) {
+			$this->do_action( 'finished_db_update' );
 			return;
 		}
 
@@ -373,7 +375,7 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 			}
 		}
 
-		$this->do_action( 'db_updated' );
+		$this->do_action( 'finished_db_update' );
 	}
 
 	/**
