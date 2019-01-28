@@ -46,8 +46,3 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
     </div>
 </div>
 <?php $instance->form( 'close', $args ); ?>
-
-
-
-
-
