@@ -48,11 +48,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $_ignore_check = false;
 
 	/**
-	 * @var bool $_upgrading
-	 */
-	private $_upgrading = false;
-
-	/**
 	 * check admin validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
@@ -116,6 +111,13 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( $this->apply_filters( 'check_only_post' ) && ! $this->app->input->is_post() ) {
 			return false;
 		}
+		if ( $is_admin && ! $this->app->input->is_post() ) {
+			$params = $this->app->input->get();
+			unset( $params['page'] );
+			if ( empty( $params ) ) {
+				return false;
+			}
+		}
 
 		return true;
 	}
@@ -132,7 +134,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		}
 		$ignore              = $this->_ignore_check;
 		$this->_ignore_check = false;
-		if ( ! $this->_is_valid_detector || $ignore || $this->_upgrading ) {
+		if ( ! $this->_is_valid_detector || $ignore ) {
 			return $query;
 		}
 
@@ -168,19 +170,21 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
-	 * start_db_update, start_upgrade
+	 * @param string $option
+	 *
+	 * @return bool
 	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function on_upgrade() {
-		$this->_upgrading = true;
-	}
+	private function check_ignore_option( $option ) {
+		if ( $this->check_wp_framework_option( $option ) ) {
+			return true;
+		}
 
-	/**
-	 * finished_db_update, finished_upgrade
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function off_upgrade() {
-		$this->_upgrading = false;
+		$pattern = $this->get_ignore_option_pattern();
+		if ( empty( $pattern ) ) {
+			return false;
+		}
+
+		return @preg_match( $pattern, $option ) > 0;
 	}
 
 	/**
@@ -188,13 +192,14 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 *
 	 * @return bool
 	 */
-	private function check_ignore_option( $option ) {
-		$pattern = $this->get_ignore_option_pattern();
-		if ( empty( $pattern ) ) {
-			return false;
+	private function check_wp_framework_option( $option ) {
+		foreach ( $this->app->get_instances() as $instance ) {
+			if ( $option === $instance->option->get_option_name() ) {
+				return true;
+			}
 		}
 
-		return @preg_match( $pattern, $option ) > 0;
+		return false;
 	}
 
 	/**
@@ -238,12 +243,15 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			}
 			$this->_is_valid_detector = false;
 
-			$this->app->log( 'csrf detected', [
-				'target'    => $target,
-				'query'     => $query,
-				'backtrace' => $backtrace,
-			], 'csrf' );
-			$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
+			try {
+				$this->app->log( 'csrf detected', [
+					'target'    => $target,
+					'query'     => $query,
+					'backtrace' => $backtrace,
+				], 'csrf' );
+				$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
+			} catch ( \Exception $e ) {
+			}
 			if ( $this->apply_filters( 'shutdown_if_detected' ) ) {
 				\WP_Framework::wp_die( [ $this->translate( 'CSRF detected' ), $target, $query ], __FILE__, __LINE__, '', false );
 			}
