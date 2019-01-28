@@ -2,7 +2,7 @@
 /**
  * WP_Framework Package Log
  *
- * @version 0.0.1
+ * @version 0.0.7
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -20,13 +20,6 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @package WP_Framework
  */
 class Package_Log extends Package_Base {
-
-	/**
-	 * initialize
-	 */
-	protected function initialize() {
-
-	}
 
 	/**
 	 * @return int

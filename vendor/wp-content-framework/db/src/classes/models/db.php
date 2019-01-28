@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Db Classes Models Db
  *
- * @version 0.0.1
+ * @version 0.0.6
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -300,7 +300,7 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 	/**
 	 * @return string
 	 */
-	private function get_table_prefix() {
+	public function get_table_prefix() {
 		global $table_prefix;
 
 		return $table_prefix . $this->get_slug( 'table_prefix', '_' );
@@ -353,28 +353,23 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 		if ( ! $this->need_to_update() ) {
 			return;
 		}
+
 		$this->do_action( 'start_db_update' );
-		$this->update_db_version();
-
-		if ( empty( $this->table_defines ) ) {
-			$this->do_action( 'finished_db_update' );
-			return;
-		}
-
-		set_time_limit( 60 * 5 );
-
-		foreach ( $this->table_defines as $table => $define ) {
-			$results = $this->table_update( $table, $define );
-			if ( $results ) {
-				$message = implode( '<br>', array_filter( $results, function ( $d ) {
-					return ! empty( $d );
-				} ) );
-				if ( $message ) {
-					$this->app->add_message( $message, 'db', false, false );
+		$this->transaction( function () {
+			$this->update_db_version();
+			set_time_limit( 60 * 5 );
+			foreach ( $this->table_defines as $table => $define ) {
+				$results = $this->table_update( $table, $define );
+				if ( $results ) {
+					$message = implode( '<br>', array_filter( $results, function ( $d ) {
+						return ! empty( $d );
+					} ) );
+					if ( $message ) {
+						$this->app->add_message( $message, 'db', false, false );
+					}
 				}
 			}
-		}
-
+		} );
 		$this->do_action( 'finished_db_update' );
 	}
 

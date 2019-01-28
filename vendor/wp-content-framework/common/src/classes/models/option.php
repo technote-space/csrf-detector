@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Option
  *
- * @version 0.0.1
+ * @version 0.0.8
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -75,7 +75,7 @@ class Option implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	/**
 	 * @return string
 	 */
-	private function get_option_name() {
+	public function get_option_name() {
 		return $this->apply_filters( 'get_option_name', $this->get_slug( 'option_name', '_options' ) );
 	}
 
