@@ -11,3 +11,8 @@
 if ( ! defined( 'CSRF_DETECTOR' ) ) {
 	exit;
 }
+
+add_action( 'csrf_detector/app_initialize', function ( $app ) {
+	/** @var \WP_Framework $app */
+	$app->setting->edit_setting( 'is_valid_log', 'default', true );
+} );
