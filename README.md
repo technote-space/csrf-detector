@@ -70,6 +70,11 @@ add_action( 'csrf_detector/csrf_detected', function ( $query, $backtrace, $targe
 }, 10, 3 );
 ```
 
+## 注意事項
+このプラグインで検知された場合でもCSRFではない場合があります。  
+例：  
+・プラグイン内部での更新動作（アクセスするユーザの権限に関係なくサイトへのアクセスを起点に何か更新を行う場合）
+
 # Author
 [GitHub (technote-space)](https://github.com/technote-space)  
 [homepage](https://technote.space)
