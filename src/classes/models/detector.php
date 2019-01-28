@@ -48,6 +48,11 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $_ignore_check = false;
 
 	/**
+	 * @var bool $_upgrading
+	 */
+	private $_upgrading = false;
+
+	/**
 	 * check admin validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
@@ -127,7 +132,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		}
 		$ignore              = $this->_ignore_check;
 		$this->_ignore_check = false;
-		if ( ! $this->_is_valid_detector || $ignore ) {
+		if ( ! $this->_is_valid_detector || $ignore || $this->_upgrading ) {
 			return $query;
 		}
 
@@ -160,6 +165,22 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function delete_option( $option ) {
 		$this->_ignore_check = $this->check_ignore_option( $option );
+	}
+
+	/**
+	 * start_db_update, start_upgrade
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function on_upgrade() {
+		$this->_upgrading = true;
+	}
+
+	/**
+	 * finished_db_update, finished_upgrade
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function off_upgrade() {
+		$this->_upgrading = false;
 	}
 
 	/**
@@ -209,7 +230,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 * @param string $query
 	 */
 	private function detect_db_update( $query ) {
-		if ( $this->_is_valid_detector && ! $this->_has_verified_nonce ) {
+		if ( ! $this->_has_verified_nonce ) {
 			$backtrace = $this->get_debug_backtrace();
 			$target    = $this->get_target_plugin_or_theme( $backtrace );
 			if ( false === $target ) {
