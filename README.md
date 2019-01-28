@@ -4,7 +4,12 @@
 [![PHP: >=5.6](https://img.shields.io/badge/PHP-%3E%3D5.6-orange.svg)](http://php.net/)
 [![WordPress: >=3.9.3](https://img.shields.io/badge/WordPress-%3E%3D3.9.3-brightgreen.svg)](https://wordpress.org/)
 
+![バナー](https://raw.githubusercontent.com/technote-space/csrf-detector/images/assets/banner-772x250.png)
+
+CSRFを検知するプラグインです。
+
 ## 要件
+
 - PHP 5.6 以上
 - WordPress 3.9.3 以上
 
