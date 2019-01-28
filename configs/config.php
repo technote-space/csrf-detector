@@ -20,6 +20,15 @@ return [
 	// suppress setting help contents
 	'suppress_setting_help_contents' => true,
 
+	// setting page title
+	'setting_page_title'             => 'Detail Settings',
+
+	// setting page priority
+	'setting_page_priority'          => 100,
+
+	// setting page slug
+	'setting_page_slug'              => 'dashboard',
+
 	// log level (for developer)
 	'log_level'                      => [
 		'error' => [
