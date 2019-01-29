@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.7
+ * @version 0.0.8
  * @author technote-space
  * @since 0.0.1
  * @copyright technote-space All Rights Reserved
@@ -19,4 +19,8 @@ add_action( 'csrf_detector/app_initialize', function ( $app ) {
 	$app->setting->remove_setting( 'minify_js' );
 	$app->setting->remove_setting( 'minify_css' );
 	$app->setting->remove_setting( 'assets_version' );
+} );
+
+add_action( 'csrf_detector/logs_page_priority', function () {
+	return 50;
 } );

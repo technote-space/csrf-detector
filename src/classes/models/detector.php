@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.6
+ * @version 0.0.8
  * @author technote-space
  * @since 0.0.1
  * @copyright technote-space All Rights Reserved
@@ -105,16 +105,32 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
 			return false;
 		}
-		if ( ! $is_admin && $this->apply_filters( 'check_only_admin' ) ) {
+		if ( ! $is_admin && $this->apply_filters( 'exclude_front' ) ) {
+			// フロント（管理画面以外）を除外
 			return false;
 		}
-		if ( $this->apply_filters( 'check_only_post' ) && ! $this->app->input->is_post() ) {
+		if ( $this->apply_filters( 'exclude_get_method' ) && ! $this->app->input->is_post() ) {
+			// GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
 			return false;
+		}
+		if ( $this->apply_filters( 'exclude_same_host' ) ) {
+			if ( ! $this->app->utility->is_changed_host() ) {
+				// hostに変化がない場合を除外
+				return false;
+			}
+		}
+		if ( $this->apply_filters( 'exclude_admin_referer' ) ) {
+			if ( $this->app->utility->was_admin() ) {
+				// 管理画面からの送信を除外
+				return false;
+			}
 		}
 		if ( $is_admin && ! $this->app->input->is_post() ) {
 			$params = $this->app->input->get();
 			unset( $params['page'] );
 			if ( empty( $params ) ) {
+				// ページの表示のみ
+				// GETパラメータによる操作等がないため除外
 				return false;
 			}
 		}

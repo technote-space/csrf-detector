@@ -4,7 +4,7 @@ Plugin Name: CSRF Detector
 Plugin URI: https://github.com/technote-space/csrf-detector
 Description: This plugin will detect csrf
 Author: technote-space
-Version: 0.0.7
+Version: 0.0.8
 Author URI: https://technote.space
 Text Domain: csrf-detector
 Domain Path: /languages/

@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Utility
  *
- * @version 0.0.9
+ * @version 0.0.10
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -59,7 +59,7 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	 */
 	public function uuid() {
 		$pid  = getmypid();
-		$node = isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : '0.0.0.0';
+		$node = $this->app->input->server( 'SERVER_ADDR', '0.0.0.0' );
 		list( $timeMid, $timeLow ) = explode( ' ', microtime() );
 
 		return sprintf( "%08x%04x%04x%02x%02x%04x%08x", (int) $timeLow, (int) substr( $timeMid, 2 ) & 0xffff,
@@ -254,8 +254,6 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
-	 * @since 0.0.4 #2
-	 *
 	 * @param string $string
 	 * @param string $delimiter
 	 *
@@ -273,32 +271,6 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	 */
 	public function create_hash( $data, $key ) {
 		return hash_hmac( function_exists( 'hash' ) ? 'sha256' : 'sha1', $data, $key );
-	}
-
-	/**
-	 * @param string $command
-	 *
-	 * @return array
-	 */
-	public function exec( $command ) {
-		$command .= ' 2>&1';
-		$command = escapeshellcmd( $command );
-		exec( $command, $output, $return_var );
-
-		return [ $output, $return_var ];
-	}
-
-	/**
-	 * @param string $command
-	 */
-	public function exec_async( $command ) {
-		$command = escapeshellcmd( $command );
-		if ( PHP_OS !== 'WIN32' && PHP_OS !== 'WINNT' ) {
-			exec( $command . ' >/dev/null 2>&1 &' );
-		} else {
-			$fp = popen( 'start "" ' . $command, 'r' );
-			pclose( $fp );
-		}
 	}
 
 	/**
@@ -351,8 +323,6 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
-	 * @since 0.0.4 #1
-	 *
 	 * @param bool $except_ajax
 	 *
 	 * @return bool

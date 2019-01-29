@@ -1,6 +1,6 @@
 <?php
 /**
- * WP_Framework Package Presenter
+ * WP_Framework Package View
  *
  * @version 0.0.1
  * @author technote-space
@@ -16,27 +16,15 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 }
 
 /**
- * Class Package_Presenter
+ * Class Package_View
  * @package WP_Framework
  */
-class Package_Presenter extends Package_Base {
+class Package_View extends Package_Base {
 
 	/**
 	 * @return int
 	 */
 	public function get_priority() {
-		return 20;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function get_configs() {
-		return [
-			'filter',
-			'map',
-			'setting',
-			'slug',
-		];
+		return 50;
 	}
 }

@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Input
  *
- * @version 0.0.4
+ * @version 0.0.10
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -184,7 +184,24 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
-	 * @since 0.0.4 #3
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function referer( $default = '' ) {
+		return $this->server( 'HTTP_REFERER', $default );
+	}
+
+	/**
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function host( $default = '' ) {
+		return $this->server( 'HTTP_HOST', $default );
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function is_post() {
