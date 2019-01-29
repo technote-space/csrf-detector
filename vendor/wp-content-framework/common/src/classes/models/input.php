@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Input
  *
- * @version 0.0.10
+ * @version 0.0.12
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -190,6 +190,20 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 */
 	public function referer( $default = '' ) {
 		return $this->server( 'HTTP_REFERER', $default );
+	}
+
+	/**
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function referer_host( $default = '' ) {
+		$referer = $this->referer();
+		if ( empty( $referer ) ) {
+			return $default;
+		}
+
+		return $this->app->utility->array_get( parse_url( $referer ), 'host', $default );
 	}
 
 	/**
