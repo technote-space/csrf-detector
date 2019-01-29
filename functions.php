@@ -20,3 +20,7 @@ add_action( 'csrf_detector/app_initialize', function ( $app ) {
 	$app->setting->remove_setting( 'minify_css' );
 	$app->setting->remove_setting( 'assets_version' );
 } );
+
+add_action( 'csrf_detector/logs_page_priority', function () {
+	return 50;
+} );
