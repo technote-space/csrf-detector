@@ -71,16 +71,18 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 	 */
 	private function get_settings() {
 		return [
-			'shutdown_if_detected' => 'input/checkbox',
-			'csrf_mail_to'         => 'input/text',
-			'target_commands'      => [
+			'shutdown_if_detected'  => 'input/checkbox',
+			'csrf_mail_to'          => 'input/text',
+			'target_commands'       => [
 				'form' => 'multi_select',
 				'args' => [
 					'options' => $this->app->utility->array_combine( $this->app->utility->explode( $this->app->setting->get_setting( 'target_commands', true )['default'] ), null ),
 				],
 			],
-			'check_only_post'      => 'input/checkbox',
-			'check_only_admin'     => 'input/checkbox',
+			'exclude_get_method'    => 'input/checkbox',
+			'exclude_front'         => 'input/checkbox',
+			'exclude_same_host'     => 'input/checkbox',
+			'exclude_admin_referer' => 'input/checkbox',
 		];
 	}
 

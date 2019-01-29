@@ -39,13 +39,23 @@ return [
 					'label'   => 'Ignore option pattern',
 					'default' => '/^(_transient_|_site_transient_)/',
 				],
-				'check_only_post'       => [
-					'label'   => 'Check only post',
+				'exclude_get_method'    => [
+					'label'   => 'Whether to exclude get method',
 					'type'    => 'bool',
 					'default' => false,
 				],
-				'check_only_admin'      => [
-					'label'   => 'Check only admin',
+				'exclude_front'         => [
+					'label'   => 'Whether to exclude front',
+					'type'    => 'bool',
+					'default' => true,
+				],
+				'exclude_same_host'     => [
+					'label'   => 'Whether to exclude same host',
+					'type'    => 'bool',
+					'default' => false,
+				],
+				'exclude_admin_referer' => [
+					'label'   => 'Whether to exclude admin referer',
 					'type'    => 'bool',
 					'default' => true,
 				],
