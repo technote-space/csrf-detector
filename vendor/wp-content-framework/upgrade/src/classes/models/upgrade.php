@@ -19,9 +19,9 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Class Upgrade
  * @package WP_Framework_Upgrade\Classes\Models
  */
-class Upgrade implements \WP_Framework_Core\Interfaces\Loader {
+class Upgrade implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Presenter\Interfaces\Presenter {
 
-	use \WP_Framework_Core\Traits\Loader, \WP_Framework_Upgrade\Traits\Package;
+	use \WP_Framework_Core\Traits\Loader, \WP_Framework_Presenter\Traits\Presenter, \WP_Framework_Upgrade\Traits\Package;
 
 	/**
 	 * setup settings
@@ -176,7 +176,7 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader {
 			$url         = $this->app->utility->array_get( $data, 'PluginURI' );
 			$notices     = $this->get_upgrade_notices( $new_version, $url );
 			if ( ! empty( $notices ) ) {
-				$this->app->get_view( $this, 'admin/include/upgrade', [
+				$this->get_view( 'admin/include/upgrade', [
 					'notices' => $notices,
 				], true );
 			}
