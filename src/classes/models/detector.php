@@ -114,7 +114,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			return false;
 		}
 		if ( $this->apply_filters( 'exclude_same_host' ) ) {
-			if ( $this->app->utility->is_changed_host() ) {
+			if ( ! $this->app->utility->is_changed_host() ) {
 				// hostに変化がない場合を除外
 				return false;
 			}
