@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Db Classes Models Db
  *
- * @version 0.0.6
+ * @version 0.0.7
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -354,7 +354,7 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 			return;
 		}
 
-		$this->do_action( 'start_db_update' );
+		$this->do_framework_action( 'start_db_update' );
 		$this->transaction( function () {
 			$this->update_db_version();
 			set_time_limit( 60 * 5 );
@@ -370,7 +370,7 @@ class Db implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\
 				}
 			}
 		} );
-		$this->do_action( 'finished_db_update' );
+		$this->do_framework_action( 'finished_db_update' );
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Filter
  *
- * @version 0.0.1
+ * @version 0.0.13
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -56,7 +56,7 @@ class Filter implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	 * @param array $methods
 	 */
 	public function register_filter( $class, $tag, array $methods ) {
-		$tag = $this->app->utility->replace( $tag, [ 'prefix' => $this->get_filter_prefix() ] );
+		$tag = $this->app->utility->replace( $tag, [ 'prefix' => $this->get_filter_prefix(), 'framework' => $this->get_framework_filter_prefix() ] );
 		if ( empty( $class ) || empty( $tag ) || ! is_array( $methods ) ) {
 			return;
 		}

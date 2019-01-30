@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Log Crons Delete Log
  *
- * @version 0.0.1
+ * @version 0.0.8
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -20,8 +20,6 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @package WP_Framework_Log\Classes\Crons\Delete
  */
 class Log extends \WP_Framework_Cron\Classes\Crons\Base {
-
-	use \WP_Framework_Log\Traits\Package;
 
 	/**
 	 * @return int
