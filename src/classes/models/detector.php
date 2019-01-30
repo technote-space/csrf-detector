@@ -97,6 +97,14 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
+	 * verified nonce
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function verified_nonce() {
+		$this->detected_verify_nonce();
+	}
+
+	/**
 	 * @param bool $is_admin
 	 *
 	 * @return bool
