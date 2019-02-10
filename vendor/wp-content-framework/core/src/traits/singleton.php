@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Core Traits Singleton
  *
- * @version 0.0.13
+ * @version 0.0.24
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -65,22 +65,23 @@ trait Singleton {
 	 * @return \WP_Framework_Core\Traits\Singleton
 	 */
 	public static function get_instance( \WP_Framework $app ) {
-		$class = get_called_class();
-		if ( false === $class ) {
-			$class = get_class();
+		$_class = get_called_class();
+		if ( false === $_class ) {
+			$_class = get_class();
 		}
 
-		list( $mapped, $class ) = $app->get_mapped_class( $class );
+		list( $mapped, $class ) = $app->get_mapped_class( $_class );
 		if ( $mapped ) {
 			$key = $app->plugin_name;
 		} else {
 			$key = static::is_shared_class() ? '' : $app->plugin_name;
 		}
+		empty( $class ) and $class = $_class;
 		if ( empty( self::$_instances[ $key ] ) || ! array_key_exists( $class, self::$_instances[ $key ] ) ) {
 			try {
 				$reflection = new \ReflectionClass( $class );
 			} catch ( \Exception $e ) {
-				$app->wp_die( 'unexpected error has occurred.', __FILE__, __LINE__ );
+				\WP_Framework::wp_die( [ 'unexpected error has occurred.', $e->getMessage(), $class, $_class ], __FILE__, __LINE__ );
 				exit;
 			}
 			if ( $reflection->isAbstract() ) {
@@ -226,31 +227,6 @@ trait Singleton {
 		$slug     = end( $exploded );
 
 		return strtolower( $slug );
-	}
-
-	/**
-	 * @param string $name
-	 * @param callable $func
-	 *
-	 * @return bool
-	 */
-	protected function lock_process( $name, callable $func ) {
-		$name .= '__LOCK_PROCESS__';
-		$this->app->option->reload_options();
-		$check = $this->app->option->get( $name );
-		if ( ! empty( $check ) ) {
-			return false;
-		}
-		$rand = md5( uniqid() );
-		$this->app->option->set( $name, $rand );
-		$this->app->option->reload_options();
-		if ( $this->app->option->get( $name ) != $rand ) {
-			return false;
-		}
-		$func();
-		$this->app->option->delete( $name );
-
-		return true;
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Common Classes Models Utility
  *
- * @version 0.0.12
+ * @version 0.0.20
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -475,5 +475,260 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 		}
 
 		return 'string';
+	}
+
+	/**
+	 * @param array|string $tags
+	 *
+	 * @return bool
+	 */
+	public function has_shortcode( $tags ) {
+		if ( empty( $tags ) ) {
+			return false;
+		}
+
+		$post = get_post();
+		if ( empty( $post ) || ! $post instanceof \WP_Post ) {
+			return false;
+		}
+		! is_array( $tags ) and $tags = [ $tags ];
+		$content = $post->post_content;
+		foreach ( $tags as $tag ) {
+			if ( has_shortcode( $content, $tag ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_valid_tinymce_color_picker() {
+		global $wp_version;
+
+		return version_compare( $wp_version, '4.0', '>=' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_block_editor() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+		$current_screen = get_current_screen();
+
+		return ( method_exists( $current_screen, 'is_block_editor' ) && $current_screen->is_block_editor() ) || ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $name
+	 * @param callable $func
+	 * @param int $timeout
+	 *
+	 * @return bool
+	 */
+	public function lock_process( \WP_Framework $app, $name, callable $func, $timeout = 60 ) {
+		$name         .= '__LOCK_PROCESS__';
+		$timeout_name = $name . 'TIMEOUT__';
+		$app->option->reload_options();
+		$check = $app->option->get( $name );
+		if ( ! empty( $check ) ) {
+			$expired = $app->option->get( $timeout_name, 0 ) < time();
+			if ( ! $expired ) {
+				return false;
+			}
+		}
+		$rand = md5( uniqid() );
+		$app->option->set( $name, $rand );
+		$app->option->reload_options();
+		if ( $app->option->get( $name ) != $rand ) {
+			return false;
+		}
+		$app->option->set( $timeout_name, time() + $timeout );
+		try {
+			$func();
+		} catch ( \Exception $e ) {
+			$app->log( $e );
+		} finally {
+			$app->option->delete( $name );
+			$app->option->delete( $timeout_name );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 *
+	 * @return bool
+	 */
+	public function delete_upload_dir( \WP_Framework $app ) {
+		return $this->delete_dir( $app->define->upload_dir );
+	}
+
+	/**
+	 * @see https://qiita.com/algo13/items/34bb9750f0e450109a03
+	 *
+	 * @param $dir
+	 *
+	 * @return bool
+	 */
+	private function delete_dir( $dir ) {
+		clearstatcache( true, $dir );
+		if ( is_file( $dir ) ) {
+			return @unlink( $dir );
+		} elseif ( is_link( $dir ) ) {
+			return @unlink( $dir ) || ( '\\' === DS && @rmdir( $dir ) );
+		} elseif ( $this->is_junction( $dir ) ) {
+			return @rmdir( $dir );
+		} elseif ( is_dir( $dir ) ) {
+			$failed = false;
+			foreach ( new \FilesystemIterator( $dir ) as $file ) {
+				/** @var \DirectoryIterator $file */
+				if ( ! $this->delete_dir( $file->getPathname() ) ) {
+					$failed = true;
+				}
+			}
+
+			return ! $failed && @rmdir( $dir );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param string $check
+	 *
+	 * @return bool
+	 */
+	private function is_junction( $check ) {
+		if ( '\\' !== DS ) {
+			return false;
+		}
+
+		$stat = @lstat( $check );
+
+		return $stat !== false && ! ( $stat['mode'] & 0xC000 );
+	}
+
+	/**
+	 * @param string $path
+	 *
+	 * @return bool
+	 */
+	public function file_exists( $path ) {
+		return file_exists( $path );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	private function get_upload_file_path( \WP_Framework $app, $path ) {
+		return $app->define->upload_dir . DS . ltrim( str_replace( '/', DS, $path ), DS );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	private function get_upload_file_link( \WP_Framework $app, $path ) {
+		return $app->define->upload_url . '/' . ltrim( str_replace( DS, '/', $path ), '/' );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 *
+	 * @return bool
+	 */
+	public function upload_file_exists( \WP_Framework $app, $path ) {
+		return $this->file_exists( $this->get_upload_file_path( $app, $path ) );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 * @param mixed $data
+	 *
+	 * @throws \Exception
+	 */
+	public function create_upload_file( \WP_Framework $app, $path, $data ) {
+		$path = $this->get_upload_file_path( $app, $path );
+		@mkdir( dirname( $path ), 0700, true );
+		if ( false === @file_put_contents( $path, $data, 0644 ) ) {
+			throw new \Exception( 'Failed to create .htaccess file.' );
+		}
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 * @param callable $generator
+	 *
+	 * @return bool
+	 */
+	public function create_upload_file_if_not_exists( \WP_Framework $app, $path, $generator ) {
+		if ( ! $this->upload_file_exists( $app, $path ) ) {
+			if ( isset( $generator ) && is_callable( $generator ) ) {
+				try {
+					$this->create_upload_file( $app, $path, $generator() );
+				} catch ( \Exception $e ) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 *
+	 * @return bool
+	 */
+	public function delete_upload_file( \WP_Framework $app, $path ) {
+		return @unlink( $this->get_upload_file_path( $app, $path ) );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 * @param callable|null $generator
+	 *
+	 * @return bool|string
+	 */
+	public function get_upload_file_contents( \WP_Framework $app, $path, $generator = null ) {
+		if ( $this->create_upload_file_if_not_exists( $app, $path, $generator ) ) {
+			return @file_get_contents( $this->get_upload_file_path( $app, $path ) );
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $path
+	 * @param callable|null $generator
+	 *
+	 * @return string|false
+	 */
+	public function get_upload_file_url( \WP_Framework $app, $path, $generator = null ) {
+		if ( $this->create_upload_file_if_not_exists( $app, $path, $generator ) ) {
+			return $this->get_upload_file_link( $app, $path );
+		}
+
+		return false;
 	}
 }

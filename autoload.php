@@ -14,10 +14,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-@require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+if ( defined( 'CSRF_DETECTOR' ) ) {
+	return;
+}
 
 define( 'CSRF_DETECTOR', 'CSRF_Detector' );
 
-WP_Framework::get_instance( CSRF_DETECTOR, __FILE__ );
+@require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'pluggable.php';
+WP_Framework::get_instance( CSRF_DETECTOR, __FILE__ );
