@@ -17,7 +17,7 @@ return [
 
 	'cron' => [
 		'${prefix}app_initialized' => [
-			'load' => [],
+			'load',
 		],
 	],
 

@@ -17,13 +17,13 @@ return [
 
 	'mail' => [
 		'wp_mail_failed'    => [
-			'wp_mail_failed' => [],
+			'wp_mail_failed',
 		],
 		'wp_mail_from'      => [
-			'wp_mail_from' => [],
+			'wp_mail_from',
 		],
 		'wp_mail_from_name' => [
-			'wp_mail_from_name' => [],
+			'wp_mail_from_name',
 		],
 	],
 

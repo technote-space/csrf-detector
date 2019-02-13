@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Upgrade Classes Models Upgrade
  *
- * @version 0.0.6
+ * @version 0.0.8
  * @author technote-space
  * @copyright technote-space All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -47,13 +47,14 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Pre
 			$this->do_framework_action( 'start_upgrade' );
 			$last_version = $this->get_last_upgrade_version();
 			$this->set_last_upgrade_version();
-			if ( empty( $last_version ) ) {
+			$plugin_version = $this->app->get_plugin_version();
+			if ( empty( $last_version ) || version_compare( $last_version, $plugin_version, '>=' ) ) {
 				$this->do_framework_action( 'finished_upgrade' );
 
 				return;
 			}
 
-			$this->app->log( sprintf( $this->translate( 'upgrade: %s to %s' ), $last_version, $this->app->get_plugin_version() ) );
+			$this->app->log( sprintf( $this->translate( 'upgrade: %s to %s' ), $last_version, $plugin_version ) );
 
 			try {
 				$upgrades = [];
@@ -299,6 +300,7 @@ class Upgrade implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Pre
 		if ( preg_match( '#==\s*Upgrade Notice\s*==([\s\S]+?)==#', $content, $matches ) ) {
 			$version = false;
 			foreach ( (array) preg_split( '~[\r\n]+~', trim( $matches[1] ) ) as $line ) {
+				/** @noinspection HtmlUnknownTarget */
 				$line = preg_replace( '~\[([^\]]*)\]\(([^\)]*)\)~', '<a href="${2}">${1}</a>', $line );
 				$line = preg_replace( '#\A\s*\*+\s*#', '', $line );
 				if ( preg_match( '#\A\s*=\s*([^\s]+)\s*=\s*\z#', $line, $m1 ) && preg_match( '#\s*(v\.?)?(\d+[\d.]*)*\s*#', $m1[1], $m2 ) ) {

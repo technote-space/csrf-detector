@@ -1,8 +1,9 @@
 <?php
 /**
- * @version 0.0.7
+ * @version 0.0.12
  * @author technote-space
  * @since 0.0.7
+ * @since 0.0.12 Changed: trivial change
  * @copyright technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space/
@@ -15,10 +16,6 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 ?>
 
 <style>
-    #<?php $instance->id(); ?>-main-contents input[type="submit"].button-primary.left {
-        margin-right: 10px;
-    }
-
     #<?php $instance->id(); ?>-main-contents .form-table {
         width: auto;
     }
