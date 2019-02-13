@@ -15,10 +15,6 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 ?>
 
 <style>
-    #<?php $instance->id(); ?>-main-contents input[type="submit"].button-primary.left {
-        margin-right: 10px;
-    }
-
     #<?php $instance->id(); ?>-main-contents .form-table {
         width: auto;
     }

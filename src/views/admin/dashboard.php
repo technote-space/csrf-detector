@@ -35,12 +35,12 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 			<?php $instance->form( 'input/submit', $args, [
 				'name'  => 'update',
 				'value' => 'Update',
-				'class' => 'button-primary left',
+				'class' => 'button-primary large',
 			] ); ?>
 			<?php $instance->form( 'input/submit', $args, [
 				'name'  => 'reset',
 				'value' => 'Reset',
-				'class' => 'button-primary left',
+				'class' => 'button-primary',
 			] ); ?>
         </div>
     </div>
