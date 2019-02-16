@@ -44,8 +44,9 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			return false;
 		}
 
-		$token = wp_get_session_token();
-		$i     = wp_nonce_tick();
+		$cookie = wp_parse_auth_cookie( '', 'logged_in' );
+		$token  = ! empty( $cookie['token'] ) ? $cookie['token'] : '';
+		$i      = wp_nonce_tick();
 
 		// Nonce generated 0-12 hours ago
 		$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
