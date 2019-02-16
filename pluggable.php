@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.1
+ * @version 0.0.13
  * @author technote-space
  * @since 0.0.1
  * @copyright technote-space All Rights Reserved
@@ -44,36 +44,44 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			return false;
 		}
 
-		$token = wp_get_session_token();
-		$i     = wp_nonce_tick();
+		$i = wp_nonce_tick();
 
-		// Nonce generated 0-12 hours ago
-		$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
-		if ( hash_equals( $expected, $nonce ) ) {
-			csrf_detector_verified_nonce();
+		if ( function_exists( 'wp_get_session_token' ) ) {
+			$token = wp_get_session_token();
 
-			return 1;
+			// Nonce generated 0-12 hours ago
+			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
+			if ( hash_equals( $expected, $nonce ) ) {
+				csrf_detector_verified_nonce();
+
+				return 1;
+			}
+
+			// Nonce generated 12-24 hours ago
+			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
+			if ( hash_equals( $expected, $nonce ) ) {
+				csrf_detector_verified_nonce();
+
+				return 2;
+			}
+
+			global $wp_version;
+			if ( version_compare( $wp_version, '4.4.0', '>=' ) ) {
+				do_action( 'wp_verify_nonce_failed', $nonce, $action, $user, $token );
+			}
+		} else {
+			// Nonce generated 0-12 hours ago
+			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid, 'nonce' ), - 12, 10 );
+			if ( hash_equals( $expected, $nonce ) ) {
+				return 1;
+			}
+
+			// Nonce generated 12-24 hours ago
+			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid, 'nonce' ), - 12, 10 );
+			if ( hash_equals( $expected, $nonce ) ) {
+				return 2;
+			}
 		}
-
-		// Nonce generated 12-24 hours ago
-		$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
-		if ( hash_equals( $expected, $nonce ) ) {
-			csrf_detector_verified_nonce();
-
-			return 2;
-		}
-
-		/**
-		 * Fires when nonce verification fails.
-		 *
-		 * @since 4.4.0
-		 *
-		 * @param string $nonce The invalid nonce.
-		 * @param string|int $action The nonce action.
-		 * @param WP_User $user The current user object.
-		 * @param string $token The user's session token.
-		 */
-		do_action( 'wp_verify_nonce_failed', $nonce, $action, $user, $token );
 
 		// Invalid nonce
 		return false;
