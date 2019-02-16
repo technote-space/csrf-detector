@@ -65,7 +65,10 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 				return 2;
 			}
 
-			do_action( 'wp_verify_nonce_failed', $nonce, $action, $user, $token );
+			global $wp_version;
+			if ( version_compare( $wp_version, '4.4.0', '>=' ) ) {
+				do_action( 'wp_verify_nonce_failed', $nonce, $action, $user, $token );
+			}
 		} else {
 			// Nonce generated 0-12 hours ago
 			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid, 'nonce' ), - 12, 10 );
