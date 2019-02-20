@@ -48,6 +48,11 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $_ignore_check = false;
 
 	/**
+	 * @var bool $_db_update
+	 */
+	private $_db_update = false;
+
+	/**
 	 * check admin validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
@@ -105,6 +110,22 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
+	 * start db update
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function start_db_update() {
+		$this->_db_update = true;
+	}
+
+	/**
+	 * finished db update
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function finished_db_update() {
+		$this->_db_update = false;
+	}
+
+	/**
 	 * @param bool $is_admin
 	 *
 	 * @return bool
@@ -158,7 +179,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		}
 		$ignore              = $this->_ignore_check;
 		$this->_ignore_check = false;
-		if ( ! $this->_is_valid_detector || $ignore ) {
+		if ( ! $this->_is_valid_detector || $ignore || $this->_db_update ) {
 			return $query;
 		}
 
