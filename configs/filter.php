@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.10
+ * @version 0.0.14
  * @author technote-space
  * @since 0.0.1
  * @copyright technote-space All Rights Reserved
@@ -15,26 +15,32 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 return [
 
 	'\Csrf_Detector\Classes\Models\Detector' => [
-		'admin_init'                 => [
+		'admin_init'                     => [
 			'check_admin_validity' => [ 1 ],
 		],
-		'init'                       => [
+		'init'                           => [
 			'check_not_admin_validity' => [ 9 ],
 		],
-		'query'                      => [
+		'query'                          => [
 			'check_query' => [],
 		],
-		'update_option'              => [
+		'update_option'                  => [
 			'update_option' => [],
 		],
-		'add_option'                 => [
+		'add_option'                     => [
 			'add_option' => [],
 		],
-		'delete_option'              => [
+		'delete_option'                  => [
 			'delete_option' => [],
 		],
-		'${framework}verified_nonce' => [
+		'${framework}verified_nonce'     => [
 			'verified_nonce' => [],
+		],
+		'${framework}start_db_update'    => [
+			'start_db_update' => [],
+		],
+		'${framework}finished_db_update' => [
+			'finished_db_update' => [],
 		],
 	],
 ];
