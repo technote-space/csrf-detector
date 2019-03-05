@@ -114,8 +114,8 @@
     },
     {
         "name": "symfony/css-selector",
-        "version": "v4.2.3",
-        "version_normalized": "4.2.3.0",
+        "version": "v4.2.4",
+        "version_normalized": "4.2.4.0",
         "source": {
             "type": "git",
             "url": "https://github.com/symfony/css-selector.git",
@@ -259,17 +259,17 @@
     },
     {
         "name": "wp-content-framework/common",
-        "version": "v0.0.23",
-        "version_normalized": "0.0.23.0",
+        "version": "v0.0.24",
+        "version_normalized": "0.0.24.0",
         "source": {
             "type": "git",
             "url": "https://github.com/wp-content-framework/common.git",
-            "reference": "394cc3026f618ae6174b330c1732bb0f58bddd1b"
+            "reference": "4ee6528029f46b0522034dac6e20c62e791fd557"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/wp-content-framework/common/zipball/394cc3026f618ae6174b330c1732bb0f58bddd1b",
-            "reference": "394cc3026f618ae6174b330c1732bb0f58bddd1b",
+            "url": "https://api.github.com/repos/wp-content-framework/common/zipball/4ee6528029f46b0522034dac6e20c62e791fd557",
+            "reference": "4ee6528029f46b0522034dac6e20c62e791fd557",
             "shasum": ""
         },
         "require": {
@@ -279,7 +279,7 @@
             "phake/phake": "~2.0",
             "phpunit/phpunit": "~5.7"
         },
-        "time": "2019-02-24T16:01:22+00:00",
+        "time": "2019-03-04T14:09:06+00:00",
         "type": "library",
         "installation-source": "dist",
         "notification-url": "https://packagist.org/downloads/",
@@ -720,23 +720,23 @@
     },
     {
         "name": "yahnis-elsts/plugin-update-checker",
-        "version": "v4.5",
-        "version_normalized": "4.5.0.0",
+        "version": "v4.5.1",
+        "version_normalized": "4.5.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/YahnisElsts/plugin-update-checker.git",
-            "reference": "d98d6bc6caac4b46b61186447a947323a466a021"
+            "reference": "57a25d905a9a4db2fdb60bc8f0b0f861cc3ee110"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/YahnisElsts/plugin-update-checker/zipball/d98d6bc6caac4b46b61186447a947323a466a021",
-            "reference": "d98d6bc6caac4b46b61186447a947323a466a021",
+            "url": "https://api.github.com/repos/YahnisElsts/plugin-update-checker/zipball/57a25d905a9a4db2fdb60bc8f0b0f861cc3ee110",
+            "reference": "57a25d905a9a4db2fdb60bc8f0b0f861cc3ee110",
             "shasum": ""
         },
         "require": {
             "php": ">=5.2.0"
         },
-        "time": "2018-12-30T10:38:32+00:00",
+        "time": "2019-01-04T17:13:39+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {
