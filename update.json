@@ -5,7 +5,7 @@
     "version": "0.0.14",
     "tested": "5.0.3",
     "homepage": "https://technote.space/",
-    "author": "technote-space",
+    "author": "Technote",
     "author_homepage": "https://technote.space/",
     "sections": {
         "description": "This plugin will detect csrf"
