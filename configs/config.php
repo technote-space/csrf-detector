@@ -50,4 +50,13 @@ return [
 		''      => 'info',
 	],
 
+	// detail url
+	'detail_url'                     => 'https://technote.space/csrf-detector',
+
+	// twitter
+	'twitter'                        => 'technote15',
+
+	// github repo
+	'github_repo'                    => 'technote-space/csrf-detector',
+
 ];

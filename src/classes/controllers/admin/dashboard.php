@@ -38,17 +38,17 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 	 * post
 	 */
 	protected function post_action() {
-		if ( $this->app->input->post( 'reset' ) ) {
+		if ( $this->app->input->post( 'update' ) ) {
+			foreach ( $this->get_settings() as $name => $form ) {
+				$this->update_setting( $name, $form );
+			}
+			$this->app->add_message( 'Settings have been updated.', 'setting' );
+		} else {
 			foreach ( $this->get_settings() as $name => $form ) {
 				$this->app->option->delete( $this->get_filter_prefix() . $name );
 				$this->delete_hook_cache( $name );
 			}
 			$this->app->add_message( 'Settings have been reset.', 'setting' );
-		} elseif ( $this->app->input->post( 'update' ) ) {
-			foreach ( $this->get_settings() as $name => $form ) {
-				$this->update_setting( $name, $form );
-			}
-			$this->app->add_message( 'Settings have been updated.', 'setting' );
 		}
 	}
 
@@ -76,7 +76,7 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 			'target_commands'       => [
 				'form' => 'multi_select',
 				'args' => [
-					'options' => $this->app->utility->array_combine( $this->app->utility->explode( $this->app->setting->get_setting( 'target_commands', true )['default'] ), null ),
+					'options' => $this->app->array->combine( $this->app->string->explode( $this->app->setting->get_setting( 'target_commands', true )['default'] ), null ),
 				],
 			],
 			'exclude_get_method'    => 'input/checkbox',
@@ -93,17 +93,17 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 	 * @return array
 	 */
 	private function process_setting_detail( $name, $form ) {
-		$detail       = $this->app->utility->array_get( is_array( $form ) ? $form : [], 'detail', $this->app->setting->get_setting( $name, true ) );
-		$value        = $this->app->utility->array_get( $detail, 'value' );
+		$detail       = $this->app->array->get( is_array( $form ) ? $form : [], 'detail', $this->app->setting->get_setting( $name, true ) );
+		$value        = $this->app->array->get( $detail, 'value' );
 		$ret          = [
 			'id'         => $this->get_id_prefix() . $name,
 			'class'      => 'csrf-detector-option',
 			'name'       => $this->get_name_prefix() . $name,
 			'value'      => $value,
-			'title'      => $this->translate( $this->app->utility->array_get( $detail, 'label', $name ) ),
+			'title'      => $this->translate( $this->app->array->get( $detail, 'label', $name ) ),
 			'attributes' => [
 				'data-value'   => $value,
-				'data-default' => $this->app->utility->array_get( $detail, 'default' ),
+				'data-default' => $this->app->array->get( $detail, 'default' ),
 			],
 			'detail'     => $detail,
 		];
@@ -127,7 +127,7 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 	private function get_setting( $name, $form ) {
 		list( $ret, $detail, $value ) = $this->process_setting_detail( $name, $form );
 
-		if ( $this->app->utility->array_get( $detail, 'type' ) === 'bool' ) {
+		if ( $this->app->array->get( $detail, 'type' ) === 'bool' ) {
 			$ret['value'] = 1;
 			$ret['label'] = 'Yes';
 			! empty( $value ) and $ret['checked'] = true;
@@ -141,7 +141,7 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 		if ( $ret['form'] === 'multi_select' ) {
 			$ret['form']     = 'select';
 			$ret['multiple'] = true;
-			$ret['selected'] = $this->app->utility->explode( $value, $this->app->utility->array_get( $ret, 'delimiter', ',' ) );
+			$ret['selected'] = $this->app->string->explode( $value, $this->app->array->get( $ret, 'delimiter', ',' ) );
 			! empty( $ret['options'] ) and $ret['size'] = count( $ret['options'] );
 			$ret['name'] .= '[]';
 		}
@@ -158,12 +158,12 @@ class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
 	private function update_setting( $name, $form ) {
 		list( $ret, $detail ) = $this->process_setting_detail( $name, $form );
 		$default = null;
-		if ( $this->app->utility->array_get( $detail, 'type' ) === 'bool' ) {
+		if ( $this->app->array->get( $detail, 'type' ) === 'bool' ) {
 			$default = 0;
 		}
 		if ( $ret['form'] === 'multi_select' ) {
 			$key = $this->get_filter_prefix() . $name;
-			$this->app->input->set_post( $key, implode( $this->app->utility->array_get( $ret, 'delimiter', ',' ), $this->app->input->post( $key ) ) );
+			$this->app->input->set_post( $key, implode( $this->app->array->get( $ret, 'delimiter', ',' ), $this->app->input->post( $key ) ) );
 		}
 
 		return $this->app->option->set_post_value( $this->get_filter_prefix() . $name, $default );
