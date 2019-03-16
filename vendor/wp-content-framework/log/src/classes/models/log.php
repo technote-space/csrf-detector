@@ -2,9 +2,9 @@
 /**
  * WP_Framework_Log Classes Models Log
  *
- * @version 0.0.7
- * @author technote-space
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.13
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -22,6 +22,11 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\Interfaces\Hook, \WP_Framework_Presenter\Interfaces\Presenter {
 
 	use \WP_Framework_Core\Traits\Singleton, \WP_Framework_Core\Traits\Hook, \WP_Framework_Presenter\Traits\Presenter, \WP_Framework_Log\Traits\Package;
+
+	/**
+	 * @var bool $_is_logging
+	 */
+	private $_is_logging = false;
 
 	/**
 	 * setup shutdown
@@ -86,22 +91,27 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 		if ( ! $this->is_valid() ) {
 			return false;
 		}
+		if ( $this->_is_logging ) {
+			return true;
+		}
+		$this->_is_logging = true;
 
 		$log_level = $this->app->get_config( 'config', 'log_level' );
 		$level     = $this->get_log_level( $level, $log_level );
 		if ( empty( $log_level[ $level ] ) ) {
+			$this->_is_logging = false;
+
 			return false;
 		}
 
-		global $wp_version;
 		$data                       = $this->get_called_info();
 		$data['message']            = is_string( $message ) ? $this->translate( $message ) : json_encode( $message );
 		$data['framework_version']  = $this->app->get_framework_version();
 		$data['plugin_version']     = $this->app->get_plugin_version();
 		$data['php_version']        = phpversion();
-		$data['wordpress_version']  = $wp_version;
+		$data['wordpress_version']  = $this->wp_version();
 		$data['level']              = $level;
-		$data['framework_packages'] = json_encode( $this->app->utility->array_combine( array_map( function ( $package ) {
+		$data['framework_packages'] = json_encode( $this->app->array->combine( array_map( function ( $package ) {
 			/** @var \WP_Framework\Package_Base $package */
 			return [
 				'version' => $package->get_version(),
@@ -114,6 +124,8 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 
 		$this->send_mail( $level, $log_level, $message, $data );
 		$this->insert_log( $level, $log_level, $data );
+
+		$this->_is_logging = false;
 
 		return true;
 	}
@@ -142,16 +154,16 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 	 * @param array $data
 	 */
 	private function insert_log( $level, array $log_level, array $data ) {
+		if ( ! $this->is_valid_package( 'db' ) ) {
+			return;
+		}
 		if ( empty( $log_level[ $level ]['is_valid_log'] ) ) {
 			return;
 		}
 		if ( $this->apply_filters( 'save_log_term' ) <= 0 ) {
 			return;
 		}
-		$db = $this->app->db;
-		if ( $db ) {
-			$db->insert( '__log', $data );
-		}
+		$this->table( '__log' )->insert( $data );
 	}
 
 	/**
@@ -161,14 +173,17 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 	 * @param array $data
 	 */
 	private function send_mail( $level, array $log_level, $message, array $data ) {
+		if ( ! $this->is_valid_package( 'mail' ) ) {
+			return;
+		}
 		if ( empty( $log_level[ $level ]['is_valid_mail'] ) ) {
 			return;
 		}
 
 		$level   = $log_level[ $level ];
-		$roles   = $this->app->utility->array_get( $level, 'roles', [] );
-		$emails  = $this->app->utility->array_get( $level, 'emails', [] );
-		$filters = $this->app->utility->array_get( $level, 'filters', [] );
+		$roles   = $this->app->array->get( $level, 'roles', [] );
+		$emails  = $this->app->array->get( $level, 'emails', [] );
+		$filters = $this->app->array->get( $level, 'filters', [] );
 		empty( $roles ) and $roles = [];
 		empty( $emails ) and $emails = [];
 		empty( $filters ) and $filters = [];
@@ -192,7 +207,7 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 			if ( empty( $items ) ) {
 				continue;
 			}
-			! is_array( $items ) and $items = $this->app->utility->explode( $items );
+			! is_array( $items ) and $items = $this->app->string->explode( $items );
 			foreach ( $items as $item ) {
 				if ( ! empty( $item ) && is_string( $item ) && is_email( $item ) ) {
 					$emails[ $item ] = $item;
@@ -230,18 +245,8 @@ class Log implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core
 	 * @return int
 	 */
 	public function delete_old_logs() {
-		$count = 0;
 		$term  = $this->apply_filters( 'save_log_term' );
-		foreach (
-			$this->app->db->select( '__log', [
-				'created_at' => [ '<', 'NOW() - INTERVAL ' . (int) $term . ' SECOND', true ],
-			] ) as $log
-		) {
-			$this->app->db->delete( '__log', [
-				'id' => $log['id'],
-			] );
-			$count ++;
-		}
+		$count = $this->table( '__log' )->where( 'created_at', '<', $this->raw( 'NOW() - INTERVAL ' . (int) $term . ' SECOND' ) )->delete();
 
 		return $count;
 	}
