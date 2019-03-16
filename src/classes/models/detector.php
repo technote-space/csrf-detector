@@ -53,9 +53,20 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $_db_update = false;
 
 	/**
-	 * check admin validity
+	 * check validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function check_validity() {
+		if ( is_admin() ) {
+			$this->check_admin_validity();
+		} else {
+			$this->check_not_admin_validity();
+		}
+	}
+
+	/**
+	 * check admin validity
+	 */
 	private function check_admin_validity() {
 		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
 			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
@@ -67,8 +78,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( ! $this->check( true ) ) {
 			return;
 		}
-		global $plugin_page;
-		if ( ! isset( $plugin_page ) ) {
+		if ( ! isset( $_GET['page'] ) ) {
 			return;
 		}
 
@@ -84,7 +94,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	/**
 	 * check not admin validity
 	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_not_admin_validity() {
 		if ( ! $this->check( false ) ) {
 			return;
