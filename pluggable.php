@@ -18,9 +18,11 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 	function csrf_detector_verified_nonce() {
 		if ( defined( 'WP_FRAMEWORK_IS_MOCK' ) && ! WP_FRAMEWORK_IS_MOCK ) {
 			$app = WP_Framework::get_instance( CSRF_DETECTOR );
-			/** @var Csrf_Detector\Classes\Models\Detector $detector */
-			$detector = Csrf_Detector\Classes\Models\Detector::get_instance( $app );
-			$detector->detected_verify_nonce();
+			if ( $app->framework_initialized() ) {
+				/** @var Csrf_Detector\Classes\Models\Detector $detector */
+				$detector = Csrf_Detector\Classes\Models\Detector::get_instance( $app );
+				$detector->detected_verify_nonce();
+			}
 		}
 	}
 

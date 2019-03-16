@@ -239,7 +239,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	private function check_wp_framework_option( $option ) {
 		foreach ( $this->app->get_instances() as $instance ) {
-			if ( $option === $instance->option->get_option_name() ) {
+			if ( $instance->option->is_managed_option_name( $option ) ) {
 				return true;
 			}
 		}
@@ -255,7 +255,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			$this->_check_pattern = false;
 			$target               = $this->apply_filters( 'target_commands' );
 			if ( preg_match( '#\A[a-zA-Z\s,]+\z#', $target ) ) {
-				$targets = $this->app->utility->explode( $target );
+				$targets = $this->app->string->explode( $target );
 				if ( ! empty( $targets ) ) {
 					$this->_check_pattern = '/\A\s*(' . implode( '|', $targets ) . ')\s/i';
 				}
