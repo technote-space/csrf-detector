@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( defined( 'CSRF_DETECTOR' ) ) {
+if ( defined( 'CSRF_DETECTOR' ) || defined( 'PHPUNIT_COMPOSER_INSTALL' ) ) {
 	return;
 }
 
