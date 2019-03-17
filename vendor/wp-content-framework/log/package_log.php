@@ -2,7 +2,7 @@
 /**
  * WP_Framework Package Log
  *
- * @version 0.0.10
+ * @version 0.0.14
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -39,6 +39,13 @@ class Package_Log extends Package_Base {
 	 * @return bool
 	 */
 	protected function is_valid_admin() {
+		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function is_valid_cron() {
 		return true;
 	}
 

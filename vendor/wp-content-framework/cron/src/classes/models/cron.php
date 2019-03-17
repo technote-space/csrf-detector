@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Cron Classes Models Cron
  *
- * @version 0.0.1
+ * @version 0.0.11
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -51,10 +51,11 @@ class Cron implements \WP_Framework_Core\Interfaces\Loader {
 	 * @return array
 	 */
 	protected function get_namespaces() {
-		$namespaces   = [];
-		$namespaces[] = $this->app->define->plugin_namespace . '\\Classes\\Crons';
-		if ( $this->is_valid_package( 'log' ) ) {
-			$namespaces[] = $this->get_package_namespace( 'log' );
+		$namespaces = [ $this->app->define->plugin_namespace . '\\Classes\\Crons\\' ];
+		foreach ( $this->app->get_packages() as $package ) {
+			foreach ( $package->get_cron_namespaces() as $namespace ) {
+				$namespaces[] = $namespace;
+			}
 		}
 
 		return $namespaces;
