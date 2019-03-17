@@ -1,9 +1,9 @@
 <?php
 /**
- * @version 0.0.14
- * @author technote-space
+ * @version 0.0.15
+ * @author Technote
  * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space/
  */
@@ -53,9 +53,20 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $_db_update = false;
 
 	/**
-	 * check admin validity
+	 * check validity
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function check_validity() {
+		if ( is_admin() ) {
+			$this->check_admin_validity();
+		} else {
+			$this->check_not_admin_validity();
+		}
+	}
+
+	/**
+	 * check admin validity
+	 */
 	private function check_admin_validity() {
 		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
 			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
@@ -67,8 +78,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( ! $this->check( true ) ) {
 			return;
 		}
-		global $plugin_page;
-		if ( ! isset( $plugin_page ) ) {
+		if ( ! isset( $_GET['page'] ) ) {
 			return;
 		}
 
@@ -84,7 +94,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	/**
 	 * check not admin validity
 	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function check_not_admin_validity() {
 		if ( ! $this->check( false ) ) {
 			return;
@@ -239,7 +248,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 */
 	private function check_wp_framework_option( $option ) {
 		foreach ( $this->app->get_instances() as $instance ) {
-			if ( $option === $instance->option->get_option_name() ) {
+			if ( $instance->option->is_managed_option_name( $option ) ) {
 				return true;
 			}
 		}
@@ -255,7 +264,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			$this->_check_pattern = false;
 			$target               = $this->apply_filters( 'target_commands' );
 			if ( preg_match( '#\A[a-zA-Z\s,]+\z#', $target ) ) {
-				$targets = $this->app->utility->explode( $target );
+				$targets = $this->app->string->explode( $target );
 				if ( ! empty( $targets ) ) {
 					$this->_check_pattern = '/\A\s*(' . implode( '|', $targets ) . ')\s/i';
 				}

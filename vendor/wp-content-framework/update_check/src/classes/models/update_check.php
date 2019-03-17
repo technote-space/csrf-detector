@@ -2,9 +2,9 @@
 /**
  * WP_Framework_Update_Check Classes Models Update_Check
  *
- * @version 0.0.1
- * @author technote-space
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.3
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -32,7 +32,7 @@ class Update_Check implements \WP_Framework_Core\Interfaces\Singleton, \WP_Frame
 		if ( ! empty( $update_info_file_url ) ) {
 			$key = $this->app->is_theme ? 'ThemeURI' : 'PluginURI';
 			$uri = $this->app->get_plugin_data( $key );
-			if ( ! empty( $uri ) && $this->app->utility->starts_with( $uri, 'https://wordpress.org' ) ) {
+			if ( ! empty( $uri ) && $this->app->string->starts_with( $uri, 'https://wordpress.org' ) ) {
 				$this->app->setting->edit_setting( 'check_update', 'default', false );
 			}
 
