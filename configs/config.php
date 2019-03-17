@@ -1,9 +1,9 @@
 <?php
 /**
- * @version 0.0.8
- * @author technote-space
+ * @version 0.0.15
+ * @author Technote
  * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -49,5 +49,14 @@ return [
 		// set default level
 		''      => 'info',
 	],
+
+	// detail url
+	'detail_url'                     => 'https://technote.space/csrf-detector',
+
+	// twitter
+	'twitter'                        => 'technote15',
+
+	// github repo
+	'github_repo'                    => 'technote-space/csrf-detector',
 
 ];

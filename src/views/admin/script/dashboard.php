@@ -1,9 +1,9 @@
 <?php
 /**
- * @version 0.0.12
- * @author technote-space
+ * @version 0.0.15
+ * @author Technote
  * @since 0.0.12
- * @copyright technote-space All Rights Reserved
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space/
  */
@@ -16,8 +16,11 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 <script>
     (function ($) {
         $(function () {
-            $('input[name="reset"]').on('click', function () {
-                return window.confirm('<?php $instance->h( 'Are you sure to reset settings?', true );?>');
+            $('.form-buttons input[name="reset"]').on('click', function () {
+                if (window.confirm('<?php $instance->h( 'Are you sure to reset settings?', true );?>')) {
+                    $(this).closest('form').submit();
+                }
+                return false;
             });
         });
     })(jQuery);

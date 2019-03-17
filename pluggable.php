@@ -1,9 +1,9 @@
 <?php
 /**
- * @version 0.0.13
- * @author technote-space
+ * @version 0.0.15
+ * @author Technote
  * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -18,9 +18,11 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 	function csrf_detector_verified_nonce() {
 		if ( defined( 'WP_FRAMEWORK_IS_MOCK' ) && ! WP_FRAMEWORK_IS_MOCK ) {
 			$app = WP_Framework::get_instance( CSRF_DETECTOR );
-			/** @var Csrf_Detector\Classes\Models\Detector $detector */
-			$detector = Csrf_Detector\Classes\Models\Detector::get_instance( $app );
-			$detector->detected_verify_nonce();
+			if ( $app->framework_initialized() ) {
+				/** @var Csrf_Detector\Classes\Models\Detector $detector */
+				$detector = Csrf_Detector\Classes\Models\Detector::get_instance( $app );
+				$detector->detected_verify_nonce();
+			}
 		}
 	}
 
