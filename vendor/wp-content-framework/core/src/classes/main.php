@@ -2,15 +2,9 @@
 /**
  * WP_Framework_Core Classes Main
  *
- * @version 0.0.4
- * @author technote-space
- * @since 0.0.1
- * @since 0.0.2 Added: send_mail の追加 (#4)
- * @since 0.0.4 Fixed: 複数プラグインでの利用への対応 (#8)
- * @since 0.0.4 Changed: 利用できないプロパティへのアクセスの動作変更 (#9)
- * @since 0.0.5 Improved: クラス読み込みの改善 (#13)
- * @since 0.0.5 Fixed: プラグインの名前空間のクラスが読みこまれない (#14)
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.46
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -30,14 +24,18 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Common\Classes\Models\Filter $filter
  * @property \WP_Framework_Common\Classes\Models\Uninstall $uninstall
  * @property \WP_Framework_Common\Classes\Models\Utility $utility
- * @property \WP_Framework_Common\Classes\Models\Upgrade $upgrade
+ * @property \WP_Framework_Common\Classes\Models\Array_Utility $array
+ * @property \WP_Framework_Common\Classes\Models\String_Utility $string
+ * @property \WP_Framework_Common\Classes\Models\File_Utility $file
  * @property \WP_Framework_Common\Classes\Models\Option $option
  * @property \WP_Framework_Common\Classes\Models\User $user
  * @property \WP_Framework_Common\Classes\Models\Input $input
+ * @property \WP_Framework_Common\Classes\Models\Deprecated $deprecated
  * @property \WP_Framework_Db\Classes\Models\Db $db
  * @property \WP_Framework_Log\Classes\Models\Log $log
  * @property \WP_Framework_Admin\Classes\Models\Admin $admin
  * @property \WP_Framework_Api\Classes\Models\Api $api
+ * @property \WP_Framework_Presenter\Classes\Models\Drawer $drawer
  * @property \WP_Framework_Presenter\Classes\Models\Minify $minify
  * @property \WP_Framework_Mail\Classes\Models\Mail $mail
  * @property \WP_Framework_Test\Classes\Models\Test $test
@@ -47,11 +45,14 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Session\Classes\Models\Session $session
  * @property \WP_Framework_Social\Classes\Models\Social $social
  * @property \WP_Framework_Post\Classes\Models\Post $post
+ * @property \WP_Framework_Update\Classes\Models\Update $update
+ * @property \WP_Framework_Update_Check\Classes\Models\Update_Check $update_check
+ * @property \WP_Framework_Upgrade\Classes\Models\Upgrade $upgrade
+ * @property \WP_Framework_Cache\Classes\Models\Cache $cache
  */
 class Main {
 
 	/**
-	 * @since 0.0.4 #8
 	 * @var Main[] $_instances
 	 */
 	private static $_instances = [];
@@ -82,19 +83,31 @@ class Main {
 	private $_properties;
 
 	/**
+	 * @var array $_class_map
+	 */
+	private $_class_map;
+
+	/**
+	 * @var array $_class_target_package
+	 */
+	private $_class_target_package;
+
+	/**
+	 * @var array $_namespace_target_package
+	 */
+	private $_namespace_target_package;
+
+	/**
+	 * @var \WP_Framework|null[] $_alternative_instances
+	 */
+	private $_alternative_instances;
+
+	/**
 	 * @var array $_property_instances
 	 */
 	private $_property_instances = [];
 
 	/**
-	 * @since 0.0.5 #13
-	 * @var string $_namespace_prefix
-	 */
-	private $_namespace_prefix = WP_CONTENT_FRAMEWORK . '_';
-
-	/**
-	 * @since 0.0.4 #8
-	 *
 	 * @param \WP_Framework $app
 	 *
 	 * @return Main
@@ -141,16 +154,59 @@ class Main {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
-		$this->_plugin_data = $this->app->is_theme ? wp_get_theme() : get_plugin_data( $this->app->plugin_file, false, false );
-		$this->_properties  = [];
+		$this->_plugin_data              = $this->app->is_theme ? wp_get_theme() : get_plugin_data( $this->app->plugin_file, false, false );
+		$this->_properties               = [];
+		$this->_class_target_package     = [];
+		$this->_namespace_target_package = [];
+		$this->_alternative_instances    = [];
+		$this->_class_map                = [];
 		foreach ( $this->app->get_packages() as $package ) {
-			$this->_properties = array_merge( $this->_properties, $package->get_config( 'map' ) );
+			$map = $package->get_config( 'map', $this->app );
+			foreach ( $map as $name => $class ) {
+				if ( is_array( $class ) ) {
+					foreach ( $class as $k => $v ) {
+						$class                                 = ltrim( $v, '\\' );
+						$this->_properties[ $k ]               = $class;
+						$this->_class_target_package[ $class ] = $name;
+						if ( ! $this->app->is_valid_package( $name ) ) {
+							$this->_alternative_instances[ $class ] = $this->get_alternative_instance( $name );
+						}
+					}
+				} else {
+					$class                                 = ltrim( $class, '\\' );
+					$this->_properties[ $name ]            = $class;
+					$this->_class_target_package[ $class ] = $package->get_package();
+				}
+			}
+			$map = $package->get_config( 'class_map', $this->app );
+			foreach ( $map as $class_map ) {
+				foreach ( $class_map as $from => $to ) {
+					$from                               = ltrim( $from, '\\' );
+					$to                                 = ltrim( $to, '\\' );
+					$this->_class_map [ $from ]         = $to;
+					$this->_class_target_package[ $to ] = $package->get_package();
+				}
+			}
+			$this->_namespace_target_package[ $package->get_namespace() ] = $package->get_package();
 		}
 	}
 
 	/**
-	 * @since 0.0.4 #9
+	 * @param string $package
 	 *
+	 * @return \WP_Framework|null
+	 */
+	private function get_alternative_instance( $package ) {
+		foreach ( $this->app->get_instances() as $instance ) {
+			if ( $instance->is_valid_package( $package ) ) {
+				return $instance;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param string $name
 	 *
 	 * @return \WP_Framework_Core\Interfaces\Singleton
@@ -175,26 +231,34 @@ class Main {
 	}
 
 	/**
-	 * @since 0.0.5 #13, #14
-	 *
 	 * @param string $class
 	 *
 	 * @return bool
 	 */
 	public function load_class( $class ) {
-		$class = ltrim( $class, '\\' );
 		$dirs  = null;
-
+		$class = ltrim( $class, '\\' );
 		if ( isset( $this->_property_instances[ $this->_properties['define'] ] ) && preg_match( "#\A{$this->define->plugin_namespace}#", $class ) ) {
 			$class = preg_replace( "#\A{$this->define->plugin_namespace}#", '', $class );
 			$dirs  = $this->define->plugin_src_dir;
-		} else {
-			if ( preg_match( "#\A{$this->_namespace_prefix}#", $class ) ) {
-				foreach ( $this->app->get_packages() as $package ) {
-					if ( $package->load_class( $class ) ) {
-						return true;
+		} elseif ( isset( $this->_class_target_package[ $class ] ) ) {
+			if ( array_key_exists( $class, $this->_alternative_instances ) ) {
+				if ( ! isset( $this->_alternative_instances[ $class ] ) ) {
+					$this->_alternative_instances[ $class ] = $this->get_alternative_instance( $this->_class_target_package[ $class ] );
+					if ( ! isset( $this->_alternative_instances[ $class ] ) ) {
+						$this->_alternative_instances[ $class ] = $this->app;
 					}
 				}
+				$instance = $this->_alternative_instances[ $class ];
+			} else {
+				$instance = $this->app;
+			}
+			if ( $instance->get_package_instance( $this->_class_target_package[ $class ] )->load_class( $class ) ) {
+				return true;
+			}
+		} elseif ( preg_match( '#\A(\w+)\\\\#', $class, $matches ) && isset( $this->_namespace_target_package[ $matches[1] ] ) ) {
+			if ( $this->app->get_package_instance( $this->_namespace_target_package[ $matches[1] ] )->load_class( $class ) ) {
+				return true;
 			}
 		}
 
@@ -228,6 +292,10 @@ class Main {
 		$this->filter->do_action( 'app_initialize', $this );
 		$this->setup_property();
 		$this->filter->do_action( 'app_initialized', $this );
+
+		if ( ! $this->option->is_app_activated() ) {
+			$this->filter->do_action( 'app_activated' );
+		}
 	}
 
 	/**
@@ -236,7 +304,7 @@ class Main {
 	private function setup_property() {
 		if ( $this->app->is_uninstall() ) {
 			foreach ( $this->_properties as $name => $class ) {
-				if ( $this->app->is_valid_package( $name ) ) {
+				if ( ! $this->app->is_valid_package( $name ) ) {
 					continue;
 				}
 				$this->$name;
@@ -250,6 +318,15 @@ class Main {
 	 */
 	public function has_initialized() {
 		return $this->_initialized;
+	}
+
+	/**
+	 * @param string $class
+	 *
+	 * @return array
+	 */
+	public function get_mapped_class( $class ) {
+		return isset( $this->_class_map[ $class ] ) ? [ true, $this->_class_map[ $class ] ] : [ false, $class ];
 	}
 
 	/**
@@ -279,12 +356,12 @@ class Main {
 
 	/**
 	 * @param string $name
-	 * @param string $key
+	 * @param string|null $key
 	 * @param mixed $default
 	 *
 	 * @return mixed
 	 */
-	public function get_config( $name, $key, $default = null ) {
+	public function get_config( $name, $key = null, $default = null ) {
 		return $this->config->get( $name, $key, $default );
 	}
 
@@ -327,12 +404,14 @@ class Main {
 	}
 
 	/**
-	 * @param string $message
+	 * @param mixed $message
 	 * @param mixed $context
 	 * @param string $level
 	 */
 	public function log( $message, $context = null, $level = '' ) {
 		if ( ! $this->app->is_valid_package( 'log' ) ) {
+			$this->error_log( $message, $context );
+
 			return;
 		}
 		if ( $message instanceof \Exception ) {
@@ -345,27 +424,34 @@ class Main {
 	}
 
 	/**
-	 * @param string $message
-	 * @param string $group
-	 * @param bool $error
-	 * @param bool $escape
+	 * @param mixed $message
+	 * @param mixed $context
 	 */
-	public function add_message( $message, $group = '', $error = false, $escape = true ) {
-		if ( ! $this->app->is_valid_package( 'admin' ) ) {
-			return;
-		}
-		if ( ! isset( $this->admin ) ) {
-			add_action( 'admin_notices', function () use ( $message, $group, $error, $escape ) {
-				$this->admin->add_message( $message, $group, $error, $escape );
-			}, 9 );
-		} else {
-			$this->admin->add_message( $message, $group, $error, $escape );
+	private function error_log( $message, $context ) {
+		if ( $message instanceof \Exception ) {
+			error_log( $message->getMessage() );
+			error_log( print_r( isset( $context ) ? $context : $message->getTraceAsString(), true ) );
+		} elseif ( $message instanceof \WP_Error ) {
+			error_log( $message->get_error_message() );
+			error_log( print_r( isset( $context ) ? $context : $message->get_error_data(), true ) );
 		}
 	}
 
 	/**
-	 * @since 0.0.2 #4
-	 *
+	 * @param string $message
+	 * @param string $group
+	 * @param bool $error
+	 * @param bool $escape
+	 * @param null|array $override_allowed_html
+	 */
+	public function add_message( $message, $group = '', $error = false, $escape = true, $override_allowed_html = null ) {
+		if ( ! $this->app->is_valid_package( 'admin' ) ) {
+			return;
+		}
+		$this->admin->add_message( $message, $group, $error, $escape, $override_allowed_html );
+	}
+
+	/**
 	 * @param string $to
 	 * @param string $subject
 	 * @param string|array $body
@@ -379,6 +465,110 @@ class Main {
 		}
 
 		return $this->mail->send( $to, $subject, $body, $text );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param bool $echo
+	 * @param bool $error
+	 * @param bool $remove_nl
+	 *
+	 * @return string
+	 */
+	public function get_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $echo = false, $error = true, $remove_nl = false ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return '';
+		}
+
+		$this->drawer->set_package( $instance );
+
+		return $this->drawer->get_view( $name, $args, $echo, $error, $remove_nl );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param int $priority
+	 */
+	public function add_script_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $priority = 10 ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->add_script_view( $name, $args, $priority );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $name
+	 * @param array $args
+	 * @param int $priority
+	 */
+	public function add_style_view( \WP_Framework_Core\Interfaces\Package $instance, $name, array $args = [], $priority = 10 ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->add_style_view( $name, $args, $priority );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $file
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param string $media
+	 * @param string $dir
+	 */
+	public function enqueue_style( \WP_Framework_Core\Interfaces\Package $instance, $handle, $file, array $depends = [], $ver = false, $media = 'all', $dir = 'css' ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->enqueue_style( $handle, $file, $depends, $ver, $media, $dir );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $file
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param bool $in_footer
+	 * @param string $dir
+	 */
+	public function enqueue_script( \WP_Framework_Core\Interfaces\Package $instance, $handle, $file, array $depends = [], $ver = false, $in_footer = true, $dir = 'js' ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return;
+		}
+
+		$this->drawer->set_package( $instance );
+		$this->drawer->enqueue_script( $handle, $file, $depends, $ver, $in_footer, $dir );
+	}
+
+	/**
+	 * @param \WP_Framework_Core\Interfaces\Package $instance
+	 * @param string $handle
+	 * @param string $name
+	 * @param array $data
+	 *
+	 * @return bool
+	 */
+	public function localize_script( \WP_Framework_Core\Interfaces\Package $instance, $handle, $name, array $data ) {
+		if ( ! $this->app->is_valid_package( 'presenter' ) ) {
+			return false;
+		}
+
+		$this->drawer->set_package( $instance );
+
+		return $this->drawer->localize_script( $handle, $name, $data );
 	}
 
 	/**
@@ -431,5 +621,16 @@ class Main {
 	public function delete_shared_object( $key, $target = null ) {
 		! isset( $target ) and $target = $this->app->plugin_name;
 		unset( self::$_shared_object[ $target ][ $key ] );
+	}
+
+	/**
+	 * @param string $name
+	 * @param callable $func
+	 * @param int $timeout
+	 *
+	 * @return bool
+	 */
+	public function lock_process( $name, callable $func, $timeout = 60 ) {
+		return $this->utility->lock_process( $this->app, $name, $func, $timeout );
 	}
 }

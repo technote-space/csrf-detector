@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Admin Classes Models Admin
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.18
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -124,15 +123,17 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 			}
 		}
 
-		$hook = add_menu_page(
-			$this->get_main_menu_title(),
-			$this->get_main_menu_title(),
+		$title = $this->get_main_menu_title();
+		$slug  = $this->get_menu_slug();
+		$hook  = add_menu_page(
+			$title,
+			$title,
 			$capability,
-			$this->get_menu_slug(),
+			$slug,
 			function () {
 			},
 			$this->get_img_url( $this->app->get_config( 'config', 'menu_image' ), '' ),
-			$this->apply_filters( 'admin_menu_position' )
+			$this->get_admin_menu_position( $slug, $title )
 		);
 
 		if ( isset( $this->page ) && $this->app->user_can( $this->page->get_capability() ) ) {
@@ -149,7 +150,7 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 
 		/** @var \WP_Framework_Admin\Classes\Controllers\Admin\Base $page */
 		foreach ( $this->_pages as $page ) {
-			$hook = add_submenu_page(
+			add_submenu_page(
 				$this->get_menu_slug(),
 				$this->translate( $page->get_page_title() ),
 				$this->translate( $page->get_menu_name() ),
@@ -159,12 +160,25 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 					$this->load();
 				}
 			);
-			if ( $this->page ) {
-				add_action( "load-$hook", function () {
-					$this->page->setup_help();
-				} );
-			}
 		}
+	}
+
+	/**
+	 * @param string $menu_slug
+	 * @param string $menu_title
+	 *
+	 * @return float|string
+	 */
+	private function get_admin_menu_position( $menu_slug, $menu_title ) {
+		$position = $this->apply_filters( 'admin_menu_position' );
+
+		global $menu;
+		if ( isset( $menu["$position"] ) && $this->compare_wp_version( '4.4', '<' ) ) {
+			$position = $position + substr( base_convert( md5( $menu_slug . $menu_title ), 16, 10 ), - 5 ) * 0.00001;
+			$position = "$position";
+		}
+
+		return $position;
 	}
 
 	/**
@@ -182,7 +196,7 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 			return;
 		}
 
-		$pages = $this->app->utility->array_map( $this->_pages, function ( $p ) {
+		$pages = $this->app->array->map( $this->_pages, function ( $p ) {
 			/** @var \WP_Framework_Admin\Classes\Controllers\Admin\Base $p */
 			return $this->get_page_prefix() . $p->get_page_slug();
 		} );
@@ -191,7 +205,7 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 		/** @var \WP_Framework_Custom_Post\Classes\Models\Custom_Post $custom_post */
 		$custom_post = \WP_Framework_Custom_Post\Classes\Models\Custom_Post::get_instance( $this->app );
 		$types       = $custom_post->get_custom_posts();
-		$types       = array_combine( $this->app->utility->array_map( $types, function ( $p ) {
+		$types       = array_combine( $this->app->array->map( $types, function ( $p ) {
 			/** @var \WP_Framework_Custom_Post\Interfaces\Custom_Post $p */
 			return "edit.php?post_type={$p->get_post_type()}";
 		} ), $types );
@@ -258,10 +272,14 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 	 * @return array
 	 */
 	protected function get_namespaces() {
-		return [
-			$this->app->define->plugin_namespace . '\\Classes\\Controllers\\Admin\\',
-			$this->get_package_namespace() . '\\Classes\\Controllers\\Admin\\',
-		];
+		$namespaces = [ $this->app->define->plugin_namespace . '\\Classes\\Controllers\\Admin\\' ];
+		foreach ( $this->app->get_packages() as $package ) {
+			foreach ( $package->get_admin_namespaces() as $namespace ) {
+				$namespaces[] = $namespace;
+			}
+		}
+
+		return $namespaces;
 	}
 
 	/**
@@ -306,8 +324,15 @@ class Admin implements \WP_Framework_Core\Interfaces\Loader, \WP_Framework_Prese
 	 * @param string $group
 	 * @param bool $escape
 	 * @param bool $error
+	 * @param null|array $override_allowed_html
 	 */
-	public function add_message( $message, $group = '', $error = false, $escape = true ) {
+	public function add_message( $message, $group = '', $error = false, $escape = true, $override_allowed_html = null ) {
+		if ( ! $escape ) {
+			$message = preg_replace_callback( '#\[([^()]+?)\]\s*\((https?://([\w\-]+\.)+[\w\-]+(/[\w\-\./\?%&=\#]*)?)\)#', function ( $matches ) {
+				return $this->url( $matches[2], $matches[1], false, ! $this->app->utility->is_admin_url( $matches[2] ), [], false );
+			}, $message );
+			$message = $this->app->string->strip_tags( $message, $override_allowed_html );
+		}
 		$this->_messages[ $group ][ $error ? 'error' : 'updated' ][] = [ $message, $escape ];
 	}
 }

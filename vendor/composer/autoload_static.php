@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06
+class ComposerStaticInitaf80ddfe98774a787a355a8979d02a16
 {
     public static $files = array (
         '89ff252b349d4d088742a09c25f5dd74' => __DIR__ . '/..' . '/yahnis-elsts/plugin-update-checker/plugin-update-checker.php',
@@ -12,6 +12,14 @@ class ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06
     );
 
     public static $prefixLengthsPsr4 = array (
+        'T' => 
+        array (
+            'TijsVerkoyen\\CssToInlineStyles\\' => 31,
+        ),
+        'S' => 
+        array (
+            'Symfony\\Component\\CssSelector\\' => 30,
+        ),
         'M' => 
         array (
             'MatthiasMullie\\PathConverter\\' => 29,
@@ -20,6 +28,14 @@ class ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06
     );
 
     public static $prefixDirsPsr4 = array (
+        'TijsVerkoyen\\CssToInlineStyles\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
+        ),
+        'Symfony\\Component\\CssSelector\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/css-selector',
+        ),
         'MatthiasMullie\\PathConverter\\' => 
         array (
             0 => __DIR__ . '/..' . '/matthiasmullie/path-converter/src',
@@ -33,8 +49,8 @@ class ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitae8284b081ab4b438eddc12d15a3ef06::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitaf80ddfe98774a787a355a8979d02a16::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitaf80ddfe98774a787a355a8979d02a16::$prefixDirsPsr4;
 
         }, null, ClassLoader::class);
     }

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wp-framework-common\n"
 "POT-Creation-Date: 2018-07-01 17:47+0900\n"
-"PO-Revision-Date: 2019-01-24 18:12+0900\n"
+"PO-Revision-Date: 2019-03-13 02:19+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -18,6 +18,9 @@ msgstr "Viewファイル[ %s ]が見つかりません。"
 
 msgid "%s not found."
 msgstr "%s が見つかりません。"
+
+msgid "Settings"
+msgstr "設定"
 
 msgid "Count"
 msgstr "カウント"
@@ -210,3 +213,12 @@ msgstr "生成されるCSSを圧縮するかどうか"
 
 msgid "Assets Version"
 msgstr "CSSやJS等に付与するバージョン(キャッシュ制御)"
+
+msgid "Cache validity"
+msgstr "キャッシュ機能が有効かどうか"
+
+msgid "Plugin details in Japanese:"
+msgstr "プラグインの詳細な説明："
+
+msgid "Reporting a new bug or feature request:"
+msgstr "バグ報告や機能要望："

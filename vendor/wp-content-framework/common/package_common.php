@@ -2,10 +2,9 @@
 /**
  * WP_Framework Package Common
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.34
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -23,13 +22,6 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 class Package_Common extends Package_Base {
 
 	/**
-	 * initialize
-	 */
-	protected function initialize() {
-
-	}
-
-	/**
 	 * @return int
 	 */
 	public function get_priority() {
@@ -43,9 +35,8 @@ class Package_Common extends Package_Base {
 		return [
 			'capability',
 			'config',
+			'deprecated',
 			'filter',
-			'map',
-			'setting',
 			'slug',
 		];
 	}

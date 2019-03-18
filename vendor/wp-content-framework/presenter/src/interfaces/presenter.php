@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Presenter Interfaces Presenter
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.16
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -20,6 +19,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Interface Presenter
  * @package WP_Framework_Presenter\Interfaces
  * @property \WP_Framework $app
+ * @mixin \WP_Framework_Core\Traits\Translate
  */
 interface Presenter {
 
@@ -110,13 +110,6 @@ interface Presenter {
 	public function json( $value, $echo = true );
 
 	/**
-	 * @param string $value
-	 *
-	 * @return string
-	 */
-	public function translate( $value );
-
-	/**
 	 * @param bool $echo
 	 *
 	 * @return string
@@ -146,21 +139,30 @@ interface Presenter {
 
 	/**
 	 * @param string $path
-	 * @param string $default
+	 * @param string|null $default
 	 * @param bool $append_version
 	 *
 	 * @return string
 	 */
-	public function get_assets_url( $path, $default = '', $append_version = true );
+	public function get_assets_url( $path, $default = null, $append_version = true );
 
 	/**
 	 * @param string $path
-	 * @param string $default
+	 * @param string|null $default
 	 * @param bool $append_version
 	 *
 	 * @return string
 	 */
-	public function get_img_url( $path, $default = 'img/no_img.png', $append_version = true );
+	public function get_upload_assets_url( $path, $default = null, $append_version = true );
+
+	/**
+	 * @param string $path
+	 * @param string|null $default
+	 * @param bool $append_version
+	 *
+	 * @return string
+	 */
+	public function get_img_url( $path, $default = null, $append_version = true );
 
 	/**
 	 * @param string $url
@@ -201,18 +203,20 @@ interface Presenter {
 	/**
 	 * @param string $path
 	 * @param int $priority
+	 * @param bool $use_upload_dir
 	 *
 	 * @return bool
 	 */
-	public function css( $path, $priority = 10 );
+	public function css( $path, $priority = 10, $use_upload_dir = false );
 
 	/**
 	 * @param string $path
 	 * @param int $priority
+	 * @param bool $use_upload_dir
 	 *
 	 * @return bool
 	 */
-	public function js( $path, $priority = 10 );
+	public function js( $path, $priority = 10, $use_upload_dir = false );
 
 	/**
 	 * @param string $handle
@@ -221,8 +225,23 @@ interface Presenter {
 	 * @param string|bool|null $ver
 	 * @param string $media
 	 * @param string $dir
+	 *
+	 * @return bool
 	 */
 	public function enqueue_style( $handle, $file, array $depends = [], $ver = false, $media = 'all', $dir = 'css' );
+
+	/**
+	 * @param string $handle
+	 * @param string $file
+	 * @param callable $generator
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param string $media
+	 * @param string $dir
+	 *
+	 * @return bool
+	 */
+	public function enqueue_upload_style( $handle, $file, $generator, array $depends = [], $ver = false, $media = 'all', $dir = 'css' );
 
 	/**
 	 * @param string $handle
@@ -231,13 +250,44 @@ interface Presenter {
 	 * @param string|bool|null $ver
 	 * @param bool $in_footer
 	 * @param string $dir
+	 *
+	 * @return bool
 	 */
 	public function enqueue_script( $handle, $file, array $depends = [], $ver = false, $in_footer = true, $dir = 'js' );
+
+	/**
+	 * @param string $handle
+	 * @param string $file
+	 * @param callable $generator
+	 * @param array $depends
+	 * @param string|bool|null $ver
+	 * @param bool $in_footer
+	 * @param string $dir
+	 *
+	 * @return bool
+	 */
+	public function enqueue_upload_script( $handle, $file, $generator, array $depends = [], $ver = false, $in_footer = true, $dir = 'js' );
+
+	/**
+	 * @param string $handle
+	 * @param string $name
+	 * @param array $data
+	 *
+	 * @return bool
+	 */
+	public function localize_script( $handle, $name, array $data );
 
 	/**
 	 * setup modal
 	 */
 	public function setup_modal();
+
+	/**
+	 * @param bool $echo
+	 *
+	 * @return string
+	 */
+	public function modal_class( $echo = true );
 
 	/**
 	 * setup color picker
@@ -250,11 +300,24 @@ interface Presenter {
 	public function get_color_picker_class();
 
 	/**
-	 * @param bool $echo
-	 *
+	 * setup dashicon picker
+	 */
+	public function setup_dashicon_picker();
+
+	/**
 	 * @return string
 	 */
-	public function modal_class( $echo = true );
+	public function get_dashicon_picker_class();
+
+	/**
+	 * setup media uploader
+	 */
+	public function setup_media_uploader();
+
+	/**
+	 * @return string
+	 */
+	public function get_media_uploader_class();
 
 	/**
 	 * @param string $handle
@@ -263,9 +326,10 @@ interface Presenter {
 
 	/**
 	 * @param string $type
+	 * @param bool $parse_db_type
 	 *
 	 * @return string
 	 */
-	public function get_form_by_type( $type );
+	public function get_form_by_type( $type, $parse_db_type = true );
 
 }

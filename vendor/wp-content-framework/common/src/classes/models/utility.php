@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Common Classes Models Utility
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.35
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -25,9 +24,24 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	use \WP_Framework_Core\Traits\Singleton, \WP_Framework_Common\Traits\Package;
 
 	/**
-	 * @var string[] $_replace_time
+	 * @var float $_tick
 	 */
-	private $_replace_time;
+	private $_tick;
+
+	/**
+	 * @var array $_active_plugins
+	 */
+	private $_active_plugins;
+
+	/**
+	 * @var string $_active_plugins_hash
+	 */
+	private $_active_plugins_hash;
+
+	/**
+	 * @var string $_framework_plugin_hash
+	 */
+	private $_framework_plugin_hash;
 
 	/**
 	 * @return bool
@@ -37,22 +51,12 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
-	 * @param array $array
-	 * @param bool $preserve_keys
+	 * @param mixed $value
 	 *
-	 * @return array
+	 * @return mixed
 	 */
-	public function flatten( array $array, $preserve_keys = false ) {
-		$return = [];
-		array_walk_recursive( $array, function ( $v, $k ) use ( &$return, $preserve_keys ) {
-			if ( $preserve_keys ) {
-				$return[ $k ] = $v;
-			} else {
-				$return[] = $v;
-			}
-		} );
-
-		return $return;
+	public function value( $value ) {
+		return $value instanceof \Closure ? $value( $this->app ) : $value;
 	}
 
 	/**
@@ -60,7 +64,7 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	 */
 	public function uuid() {
 		$pid  = getmypid();
-		$node = isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : '0.0.0.0';
+		$node = $this->app->input->server( 'SERVER_ADDR', '0.0.0.0' );
 		list( $timeMid, $timeLow ) = explode( ' ', microtime() );
 
 		return sprintf( "%08x%04x%04x%02x%02x%04x%08x", (int) $timeLow, (int) substr( $timeMid, 2 ) & 0xffff,
@@ -96,157 +100,7 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 			return $const;
 		}
 
-		return $default;
-	}
-
-	/**
-	 * @param array|object $obj
-	 *
-	 * @return array
-	 */
-	private function get_array_value( $obj ) {
-		if ( $obj instanceof \stdClass ) {
-			$obj = get_object_vars( $obj );
-		} elseif ( ! is_array( $obj ) ) {
-			if ( method_exists( $obj, 'to_array' ) ) {
-				$obj = $obj->to_array();
-			}
-		}
-		if ( ! is_array( $obj ) || empty( $obj ) ) {
-			return [];
-		}
-
-		return $obj;
-	}
-
-	/**
-	 * @param array|object $array
-	 * @param string $key
-	 * @param mixed $default
-	 *
-	 * @return mixed
-	 */
-	public function array_get( $array, $key, $default = null ) {
-		$array = $this->get_array_value( $array );
-		if ( array_key_exists( $key, $array ) ) {
-			return $array[ $key ];
-		}
-
-		return $default;
-	}
-
-	/**
-	 * @param array $array
-	 * @param string $key
-	 * @param mixed $value
-	 */
-	public function array_set( array &$array, $key, $value ) {
-		$array[ $key ] = $value;
-	}
-
-	/**
-	 * @param array|object $array
-	 * @param string $key
-	 * @param mixed $default
-	 * @param bool $filter
-	 *
-	 * @return array
-	 */
-	public function array_pluck( $array, $key, $default = null, $filter = false ) {
-		$array = $this->get_array_value( $array );
-
-		return array_map( function ( $d ) use ( $key, $default ) {
-			is_object( $d ) and $d = (array) $d;
-
-			return is_array( $d ) && array_key_exists( $key, $d ) ? $d[ $key ] : $default;
-		}, $filter ? array_filter( $array, function ( $d ) use ( $key ) {
-			is_object( $d ) and $d = (array) $d;
-
-			return is_array( $d ) && array_key_exists( $key, $d );
-		} ) : $array );
-	}
-
-	/**
-	 * @param array|object $array
-	 * @param string|callable $callback
-	 *
-	 * @return array
-	 */
-	public function array_map( $array, $callback ) {
-		$array = $this->get_array_value( $array );
-
-		return array_map( function ( $d ) use ( $callback ) {
-			return is_callable( $callback ) ? $callback( $d ) : ( is_string( $callback ) && method_exists( $d, $callback ) ? $d->$callback() : null );
-		}, $array );
-	}
-
-	/**
-	 * @param array|object $array
-	 * @param string $key
-	 *
-	 * @return array
-	 */
-	public function array_pluck_unique( $array, $key ) {
-		return array_unique( $this->array_pluck( $array, $key, null, true ) );
-	}
-
-	/**
-	 * @param array $array
-	 * @param string $key
-	 * @param string $value
-	 *
-	 * @return array
-	 */
-	public function array_combine( array $array, $key, $value = null ) {
-		$keys   = $this->array_pluck( $array, $key );
-		$values = empty( $value ) ? $array : $this->array_pluck( $array, $value );
-
-		return array_combine( $keys, $values );
-	}
-
-	/**
-	 * @param string $string
-	 * @param array $data
-	 *
-	 * @return string
-	 */
-	public function replace( $string, array $data ) {
-		foreach ( $data as $k => $v ) {
-			$string = str_replace( '${' . $k . '}', $v, $string );
-		}
-
-		return $string;
-	}
-
-	/**
-	 * @param string $string
-	 *
-	 * @return string
-	 */
-	public function replace_time( $string ) {
-		if ( ! isset( $this->_replace_time ) ) {
-			$this->_replace_time = [];
-			foreach (
-				[
-					'Y',
-					'y',
-					'M',
-					'm',
-					'n',
-					'D',
-					'd',
-					'H',
-					'h',
-					'i',
-					'j',
-					's',
-				] as $t
-			) {
-				$this->_replace_time[ $t ] = date_i18n( $t );
-			}
-		}
-
-		return $this->replace( $string, $this->_replace_time );
+		return $this->value( $default );
 	}
 
 	/**
@@ -257,66 +111,6 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	 */
 	public function create_hash( $data, $key ) {
 		return hash_hmac( function_exists( 'hash' ) ? 'sha256' : 'sha1', $data, $key );
-	}
-
-	/**
-	 * @param string $command
-	 *
-	 * @return array
-	 */
-	public function exec( $command ) {
-		$command .= ' 2>&1';
-		$command = escapeshellcmd( $command );
-		exec( $command, $output, $return_var );
-
-		return [ $output, $return_var ];
-	}
-
-	/**
-	 * @param string $command
-	 */
-	public function exec_async( $command ) {
-		$command = escapeshellcmd( $command );
-		if ( PHP_OS !== 'WIN32' && PHP_OS !== 'WINNT' ) {
-			exec( $command . ' >/dev/null 2>&1 &' );
-		} else {
-			$fp = popen( 'start "" ' . $command, 'r' );
-			pclose( $fp );
-		}
-	}
-
-	/**
-	 * @param string $haystack
-	 * @param string $needle
-	 *
-	 * @return bool
-	 */
-	public function starts_with( $haystack, $needle ) {
-		if ( '' === $haystack || '' === $needle ) {
-			return false;
-		}
-		if ( $haystack === $needle ) {
-			return true;
-		}
-
-		return strncmp( $haystack, $needle, strlen( $needle ) ) === 0;
-	}
-
-	/**
-	 * @param string $haystack
-	 * @param string $needle
-	 *
-	 * @return bool
-	 */
-	public function ends_with( $haystack, $needle ) {
-		if ( '' === $haystack || '' === $needle ) {
-			return false;
-		}
-		if ( $haystack === $needle ) {
-			return true;
-		}
-
-		return substr_compare( $haystack, $needle, - strlen( $needle ) ) === 0;
 	}
 
 	/**
@@ -331,14 +125,60 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 			return wp_doing_ajax();
 		}
 
-		return $this->definedv( 'DOING_AJAX' );
+		return ! ! $this->definedv( 'DOING_AJAX' );
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function is_admin() {
-		return is_admin() && ! $this->doing_ajax();
+	public function doing_cron() {
+		return ! ! $this->definedv( 'DOING_CRON' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_autosave() {
+		return ! ! $this->definedv( 'DOING_AUTOSAVE' );
+	}
+
+	/**
+	 * @param bool $except_ajax
+	 *
+	 * @return bool
+	 */
+	public function is_admin( $except_ajax = true ) {
+		return is_admin() && ( ! $except_ajax || ! $this->doing_ajax() );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function was_admin() {
+		return $this->is_admin_url( $this->app->input->referer() );
+	}
+
+	/**
+	 * @param string $url
+	 *
+	 * @return bool
+	 */
+	public function is_admin_url( $url ) {
+		return $this->app->string->starts_with( $url, admin_url() );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_changed_host() {
+		return $this->app->input->host() !== $this->app->input->referer_host();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_changed_admin() {
+		return $this->is_admin() !== $this->was_admin();
 	}
 
 	/**
@@ -374,7 +214,7 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return array
 	 */
 	private function parse_backtrace_args( array $args ) {
-		return $this->array_map( $args, function ( $d ) {
+		return $this->app->array->map( $args, function ( $d ) {
 			$type = gettype( $d );
 			if ( 'array' === $type ) {
 				return $this->parse_backtrace_args( $d );
@@ -410,9 +250,9 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 
 				$path = rtrim( $dir, DS ) . DS . $file;
 				if ( is_file( $path ) ) {
-					if ( $this->ends_with( $file, '.php' ) ) {
+					if ( $this->app->string->ends_with( $file, '.php' ) ) {
 						if ( $split ) {
-							$list[] = [ $relative, ucfirst( $this->app->get_page_slug( $file ) ) ];
+							$list[] = [ $relative, ucfirst( $this->app->get_page_slug( $file ) ), $path ];
 						} else {
 							$list[] = $relative . ucfirst( $this->app->get_page_slug( $file ) );
 						}
@@ -455,5 +295,174 @@ class Utility implements \WP_Framework_Core\Interfaces\Singleton {
 		}
 
 		return 'string';
+	}
+
+	/**
+	 * @param array|string $tags
+	 *
+	 * @return bool
+	 */
+	public function has_shortcode( $tags ) {
+		if ( empty( $tags ) ) {
+			return false;
+		}
+
+		$post = get_post();
+		if ( empty( $post ) || ! $post instanceof \WP_Post ) {
+			return false;
+		}
+		! is_array( $tags ) and $tags = [ $tags ];
+		$content = $post->post_content;
+		foreach ( $tags as $tag ) {
+			if ( has_shortcode( $content, $tag ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_valid_tinymce_color_picker() {
+		return $this->compare_wp_version( '4.0.0', '>=' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function can_use_block_editor() {
+		return $this->compare_wp_version( '5.0.0', '>=' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_block_editor() {
+		if ( ! is_admin() ) {
+			return false;
+		}
+		$current_screen = get_current_screen();
+
+		return ( method_exists( $current_screen, 'is_block_editor' ) && $current_screen->is_block_editor() ) || ( function_exists( 'is_gutenberg_page' ) && is_gutenberg_page() );
+	}
+
+	/**
+	 * @param \WP_Framework $app
+	 * @param string $name
+	 * @param callable $func
+	 * @param int $timeout
+	 *
+	 * @return bool
+	 */
+	public function lock_process( \WP_Framework $app, $name, callable $func, $timeout = 60 ) {
+		$name         .= '__LOCK_PROCESS__';
+		$timeout_name = $name . 'TIMEOUT__';
+		$option       = $app->option;
+		$option->flush();
+		$check = $option->get( $name );
+		if ( ! empty( $check ) ) {
+			$expired = $option->get( $timeout_name, 0 ) < time();
+			if ( ! $expired ) {
+				return false;
+			}
+		}
+		$rand = md5( uniqid() );
+		$option->set( $name, $rand );
+		$option->flush();
+		if ( $option->get( $name ) != $rand ) {
+			return false;
+		}
+		$option->set( $timeout_name, time() + $timeout );
+		try {
+			$func();
+		} catch ( \Exception $e ) {
+			$app->log( $e );
+		} finally {
+			$option->delete( $name );
+			$option->delete( $timeout_name );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param bool $combine
+	 *
+	 * @return array
+	 */
+	public function get_active_plugins( $combine = true ) {
+		if ( ! isset( $this->_active_plugins ) ) {
+			$option = get_option( 'active_plugins', [] );
+			if ( is_multisite() ) {
+				$option = array_merge( $option, array_keys( get_site_option( 'active_sitewide_plugins' ) ) );
+				$option = array_unique( $option );
+			}
+			$this->_active_plugins = $combine ? $this->app->array->combine( $option, null ) : array_values( $option );
+		}
+
+		return $this->_active_plugins;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_active_plugins_hash() {
+		! isset( $this->_active_plugins_hash ) and $this->_active_plugins_hash = sha1( json_encode( $this->get_active_plugins( false ) ) );
+
+		return $this->_active_plugins_hash;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function get_framework_plugins() {
+		return $this->app->array->map( $this->app->get_instances(), function ( $instance ) {
+			/** @var \WP_Framework $instance */
+			return $instance->plugin_name . '/' . $instance->get_plugin_version();
+		} );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function get_framework_plugins_hash() {
+		! isset( $this->_framework_plugin_hash ) and $this->_framework_plugin_hash = sha1( json_encode( $this->get_framework_plugins() ) );
+
+		return $this->_framework_plugin_hash;
+	}
+
+	/**
+	 * @param string $plugin
+	 *
+	 * @return bool
+	 */
+	public function is_active_plugin( $plugin ) {
+		return in_array( $plugin, $this->get_active_plugins( false ) );
+	}
+
+	/**
+	 * for debug
+	 */
+	public function timer_start() {
+		$this->_tick = microtime( true ) * 1000;
+	}
+
+	/**
+	 * for debug
+	 *
+	 * @param string $format
+	 */
+	public function timer_tick( $format = '%12.8f' ) {
+		if ( ! isset( $this->_tick ) ) {
+			$this->timer_start();
+
+			return;
+		}
+		$now     = microtime( true ) * 1000;
+		$elapsed = $now - $this->_tick;
+		error_log( sprintf( $format, $elapsed ) );
+		$this->_tick = $now;
 	}
 }

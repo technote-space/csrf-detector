@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Core Traits Translate
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.33
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -55,22 +54,22 @@ trait Translate {
 	 */
 	protected function get_textdomains() {
 		$package = $this->get_package();
-		if ( ! isset( self::$_textdomains[ $package ] ) ) {
-			self::$_textdomains[ $package ] = [];
-			! empty( $this->app->define->plugin_textdomain ) and self::$_textdomains[ $package ][ $this->app->define->plugin_textdomain ] = $this->app->define->plugin_languages_dir;
+		if ( ! isset( self::$_textdomains[ $package ][ $this->app->plugin_name ] ) ) {
+			self::$_textdomains[ $package ][ $this->app->plugin_name ] = [];
+			! empty( $this->app->define->plugin_textdomain ) and self::$_textdomains[ $package ][ $this->app->plugin_name ][ $this->app->define->plugin_textdomain ] = $this->app->define->plugin_languages_dir;
 			$instance = $this->get_package_instance();
 			foreach ( $instance->get_translate_settings() as $textdomain => $path ) {
-				self::$_textdomains[ $package ][ $textdomain ] = $path;
+				self::$_textdomains[ $package ][ $this->app->plugin_name ][ $textdomain ] = $path;
 			}
 
-			foreach ( self::$_textdomains[ $package ] as $textdomain => $path ) {
+			foreach ( self::$_textdomains[ $package ][ $this->app->plugin_name ] as $textdomain => $path ) {
 				if ( ! $this->setup_textdomain( $textdomain, $path ) ) {
-					unset( self::$_textdomains[ $package ][ $textdomain ] );
+					unset( self::$_textdomains[ $package ][ $this->app->plugin_name ][ $textdomain ] );
 				}
 			}
 		}
 
-		return self::$_textdomains[ $package ];
+		return self::$_textdomains[ $package ][ $this->app->plugin_name ];
 	}
 
 	/**
@@ -81,7 +80,11 @@ trait Translate {
 	 */
 	private function setup_textdomain( $textdomain, $dir ) {
 		if ( ! isset( self::$_loaded_languages[ $textdomain ] ) ) {
-			$locale = apply_filters( 'plugin_locale', determine_locale(), $textdomain );
+			if ( function_exists( 'determine_locale' ) ) {
+				$locale = apply_filters( 'plugin_locale', determine_locale(), $textdomain );
+			} else {
+				$locale = apply_filters( 'plugin_locale', get_locale(), $textdomain );
+			}
 			$mofile = $textdomain . '-' . $locale . '.mo';
 			$path   = $dir . DS . $mofile;
 

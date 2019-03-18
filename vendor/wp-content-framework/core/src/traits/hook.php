@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Core Traits Hook
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.41
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -20,8 +19,14 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Trait Hook
  * @package WP_Framework_Core\Traits
  * @property \WP_Framework $app
+ * @mixin Utility
  */
 trait Hook {
+
+	/**
+	 * @var string $_filter_prefix
+	 */
+	private $_filter_prefix = null;
 
 	/**
 	 * load cache settings
@@ -45,7 +50,16 @@ trait Hook {
 	 * @return string
 	 */
 	protected function get_filter_prefix() {
-		return $this->get_slug( 'filter_prefix', '' ) . '-';
+		! isset( $this->_filter_prefix ) and $this->_filter_prefix = $this->get_slug( 'filter_prefix', '' ) . $this->app->get_config( 'config', 'filter_separator' );
+
+		return $this->_filter_prefix;
+	}
+
+	/**
+	 * @return string
+	 */
+	private function get_framework_filter_prefix() {
+		return WP_FRAMEWORK_VENDOR_NAME . '/';
 	}
 
 	/**
@@ -63,7 +77,7 @@ trait Hook {
 	 */
 	protected function delete_hook_cache( $key ) {
 		$cache = $this->app->get_shared_object( '_hook_cache' );
-		if ( ! empty( $cache ) && isset( $cache[ $key ] ) ) {
+		if ( ! empty( $cache ) && array_key_exists( $key, $cache ) ) {
 			unset( $cache[ $key ] );
 			$this->app->set_shared_object( '_hook_cache', $cache );
 		}
@@ -94,36 +108,53 @@ trait Hook {
 	 * @return mixed
 	 */
 	public function apply_filters() {
-		$args = func_get_args();
-		$key  = $args[0];
+		return $this->_apply_filters( $this->get_filter_prefix(), func_get_args() );
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function apply_framework_filters() {
+		return $this->_apply_filters( $this->get_framework_filter_prefix(), func_get_args() );
+	}
+
+	/**
+	 * @param string $prefix
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	private function _apply_filters( $prefix, $args ) {
+		$key = $args[0];
 
 		list( $cache_is_valid, $cache, $is_valid_cache ) = $this->get_hook_cache( $key );
 		if ( $cache_is_valid ) {
 			return $cache;
 		}
 
-		$args[0] = $this->get_filter_prefix() . $key;
+		$args[0] = $prefix . $key;
 		if ( count( $args ) < 2 ) {
 			$args[] = null;
-		} elseif ( ! is_string( $args[1] ) && is_callable( $args[1] ) ) {
-			$args[1] = ( $args[1] )( $this->app );
+		} else {
+			$this->call_if_closure_with_result( $args[1], $args[1], $this->app );
 		}
 		$default = call_user_func_array( 'apply_filters', $args );
 
 		if ( ! empty( $this->app->setting ) && $this->app->setting->is_setting( $key ) ) {
 			$setting = $this->app->setting->get_setting( $key );
-			$default = $this->app->utility->array_get( $setting, 'default', $default );
-			if ( is_callable( $default ) ) {
-				$default = $default( $this->app );
-			}
+			$default = $this->app->array->get( $setting, 'default', $default );
+			$this->call_if_closure_with_result( $default, $default, $this->app );
 			$value = $this->app->get_option( $args[0], null );
 			if ( ! isset( $value ) || $value === '' ) {
 				$value = $default;
 			}
 
-			$type = $this->app->utility->array_get( $setting, 'type', '' );
-			if ( is_callable( [ $this, 'get_' . $type . '_value' ] ) ) {
-				$value = call_user_func( [ $this, 'get_' . $type . '_value' ], $value, $default, $setting );
+			$type = $this->app->array->get( $setting, 'type', '' );
+			if ( $type ) {
+				$method = 'get_' . $type . '_value';
+				if ( $this->is_method_callable( $method ) ) {
+					$value = call_user_func( [ $this, $method ], $value, $default, $setting );
+				}
 			}
 			if ( ! empty( $setting['translate'] ) && $value === $default ) {
 				$value = $this->translate( $value );
@@ -232,8 +263,24 @@ trait Hook {
 	 * do action
 	 */
 	public function do_action() {
-		$args    = func_get_args();
-		$args[0] = $this->get_filter_prefix() . $args[0];
+		$this->_do_action( $this->get_filter_prefix(), func_get_args() );
+	}
+
+	/**
+	 * do framework action
+	 */
+	public function do_framework_action() {
+		$args = func_get_args();
+		$this->_do_action( $this->get_framework_filter_prefix(), $args );
+		$this->_do_action( $this->get_filter_prefix(), $args );
+	}
+
+	/**
+	 * @param string $prefix
+	 * @param array $args
+	 */
+	private function _do_action( $prefix, $args ) {
+		$args[0] = $prefix . $args[0];
 		call_user_func_array( 'do_action', $args );
 	}
 }

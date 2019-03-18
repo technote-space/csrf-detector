@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Cron Traits Cron
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.10
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -29,10 +28,13 @@ trait Cron {
 	 * initialize
 	 */
 	protected final function initialize() {
-		add_action( $this->get_hook_name(), function () {
-			$this->run();
-		} );
-		$this->set_cron_event();
+		if ( $this->app->utility->doing_cron() ) {
+			add_action( $this->get_hook_name(), function () {
+				$this->run();
+			} );
+		} else {
+			$this->set_cron_event();
+		}
 	}
 
 	/**
@@ -126,9 +128,9 @@ trait Cron {
 		}
 		set_time_limit( 0 );
 		$this->lock_cron_process();
-		$this->do_action( 'before_cron_run', $this->get_hook_name() );
+		$this->do_framework_action( 'before_cron_run', $this->get_hook_name() );
 		$this->execute();
-		$this->do_action( 'after_cron_run', $this->get_hook_name() );
+		$this->do_framework_action( 'after_cron_run', $this->get_hook_name() );
 		$this->set_cron_event();
 		$this->unlock_cron_process();
 	}

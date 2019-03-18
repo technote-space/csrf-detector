@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Core Traits Nonce
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.41
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -20,6 +19,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * Trait Nonce
  * @package WP_Framework_Core\Traits
  * @property \WP_Framework $app
+ * @mixin Hook
  */
 trait Nonce {
 
@@ -31,7 +31,7 @@ trait Nonce {
 	/**
 	 * @return string
 	 */
-	private function get_nonce_key() {
+	protected function get_nonce_key() {
 		$slug       = $this->get_slug( 'nonce_key', '_nonce' );
 		$nonce_slug = $this->get_nonce_slug();
 
@@ -41,7 +41,7 @@ trait Nonce {
 	/**
 	 * @return string
 	 */
-	private function get_nonce_action() {
+	protected function get_nonce_action() {
 		$slug       = $this->get_slug( 'nonce_action', '_nonce_action' );
 		$nonce_slug = $this->get_nonce_slug();
 
@@ -49,28 +49,33 @@ trait Nonce {
 	}
 
 	/**
+	 * @param bool $check_user
+	 *
 	 * @return string
 	 */
-	protected function create_nonce() {
-		return wp_create_nonce( $this->get_nonce_action() );
+	protected function create_nonce( $check_user = true ) {
+		return $this->wp_create_nonce( $this->get_nonce_action(), $check_user );
 	}
 
 	/**
+	 * @param bool $check_user
+	 *
 	 * @return bool
 	 */
-	private function nonce_check() {
+	protected function nonce_check( $check_user = true ) {
 		$nonce_key = $this->get_nonce_key();
 
-		return ! $this->need_nonce_check( $nonce_key ) || $this->verify_nonce( $this->app->input->request( $nonce_key, '' ) );
+		return ! $this->need_nonce_check( $nonce_key ) || $this->verify_nonce( $this->app->input->request( $nonce_key, '' ), $check_user );
 	}
 
 	/**
 	 * @param string $nonce
+	 * @param bool $check_user
 	 *
 	 * @return false|int
 	 */
-	public function verify_nonce( $nonce ) {
-		return $nonce && wp_verify_nonce( $nonce, $this->get_nonce_action() );
+	public function verify_nonce( $nonce, $check_user = true ) {
+		return $nonce && $this->wp_verify_nonce( $nonce, $this->get_nonce_action(), $check_user );
 	}
 
 	/**

@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Core Traits Singleton
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.42
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -23,7 +22,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  */
 trait Singleton {
 
-	use Readonly, Translate, Package;
+	use Readonly, Translate, Utility, Package;
 
 	/**
 	 * @var Singleton[] $_instances
@@ -41,9 +40,24 @@ trait Singleton {
 	protected $app;
 
 	/**
+	 * @var bool $_initialize_called
+	 */
+	private $_initialize_called = false;
+
+	/**
+	 * @var bool $_initialized_called
+	 */
+	private $_initialized_called = false;
+
+	/**
 	 * @var string $_class_name
 	 */
 	private $_class_name;
+
+	/**
+	 * @var string $_class_name_slug
+	 */
+	private $_class_name_slug;
 
 	/**
 	 * @var \ReflectionClass $_reflection
@@ -56,29 +70,42 @@ trait Singleton {
 	 * @return \WP_Framework_Core\Traits\Singleton
 	 */
 	public static function get_instance( \WP_Framework $app ) {
-		$class = get_called_class();
-		if ( false === $class ) {
-			$class = get_class();
+		$_class = get_called_class();
+		if ( false === $_class ) {
+			$_class = get_class();
 		}
-		$key = static::is_shared_class() ? '' : $app->plugin_name;
+
+		list( $mapped, $class ) = $app->get_mapped_class( $_class );
+		if ( $mapped ) {
+			$key = $app->plugin_name;
+		} else {
+			$key = static::is_shared_class() ? '' : $app->plugin_name;
+		}
+		empty( $class ) and $class = $_class;
 		if ( empty( self::$_instances[ $key ] ) || ! array_key_exists( $class, self::$_instances[ $key ] ) ) {
 			try {
 				$reflection = new \ReflectionClass( $class );
 			} catch ( \Exception $e ) {
-				$app->wp_die( 'unexpected error has occurred.', __FILE__, __LINE__ );
+				\WP_Framework::wp_die( [ 'unexpected error has occurred.', $e->getMessage(), $class, $_class ], __FILE__, __LINE__ );
 				exit;
 			}
 			if ( $reflection->isAbstract() ) {
 				self::$_instances[ $key ][ $class ] = null;
 			} else {
-				$instance = new static( $app, $reflection );
-				if ( $app->is_uninstall() && $instance instanceof \WP_Framework_Common\Interfaces\Uninstall ) {
-					$app->uninstall->add_uninstall( [ $instance, 'uninstall' ], $instance->get_uninstall_priority() );
+				if ( $mapped ) {
+					/** @var \WP_Framework_Core\Traits\Singleton $class */
+					$instance                           = $class::get_instance( $app );
+					self::$_instances[ $key ][ $class ] = $instance;
+				} else {
+					$instance = new static( $app, $reflection );
+					if ( $app->is_uninstall() && $instance instanceof \WP_Framework_Common\Interfaces\Uninstall ) {
+						$app->uninstall->add_uninstall( function () use ( $instance ) {
+							$instance->uninstall();
+						}, $instance->get_uninstall_priority() );
+					}
+					self::$_instances[ $key ][ $class ] = $instance;
+					$instance->call_initialize();
 				}
-				self::$_instances[ $key ][ $class ] = $instance;
-				$instance->set_allowed_access( true );
-				$instance->initialize();
-				$instance->set_allowed_access( false );
 			}
 		}
 
@@ -112,10 +139,10 @@ trait Singleton {
 		$this->_class_name = $reflection->getName();
 		if ( $this instanceof \WP_Framework_Core\Interfaces\Hook ) {
 			if ( $app->has_initialized() ) {
-				$this->initialized();
+				$this->call_initialized();
 			} else {
 				add_action( $this->get_filter_prefix() . 'app_initialized', function () {
-					$this->initialized();
+					$this->call_initialized();
 				} );
 			}
 		}
@@ -133,6 +160,31 @@ trait Singleton {
 	 */
 	protected function initialized() {
 
+	}
+
+	/**
+	 * call initialize
+	 */
+	private function call_initialize() {
+		if ( $this->_initialize_called || ! $this->app->is_enough_version() ) {
+			return;
+		}
+		$this->_initialize_called = true;
+		$this->set_allowed_access( true );
+		$this->initialize();
+		$this->set_allowed_access( false );
+	}
+
+	/**
+	 * call initialized
+	 */
+	private function call_initialized() {
+		$this->call_initialize();
+		if ( $this->_initialized_called || ! $this->app->is_enough_version() ) {
+			return;
+		}
+		$this->_initialized_called = true;
+		$this->initialized();
 	}
 
 	/**
@@ -160,7 +212,7 @@ trait Singleton {
 	 * @return bool
 	 */
 	public function is_filter_callable( $method ) {
-		return method_exists( $this, $method ) && is_callable( [ $this, $method ] );
+		return $this->is_method_callable( $method );
 	}
 
 	/**
@@ -185,31 +237,6 @@ trait Singleton {
 	}
 
 	/**
-	 * @param string $name
-	 * @param callable $func
-	 *
-	 * @return bool
-	 */
-	protected function lock_process( $name, callable $func ) {
-		$name .= '__LOCK_PROCESS__';
-		$this->app->option->reload_options();
-		$check = $this->app->option->get( $name );
-		if ( ! empty( $check ) ) {
-			return false;
-		}
-		$rand = md5( uniqid() );
-		$this->app->option->set( $name, $rand );
-		$this->app->option->reload_options();
-		if ( $this->app->option->get( $name ) != $rand ) {
-			return false;
-		}
-		$func();
-		$this->app->option->delete( $name );
-
-		return true;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function get_class_name() {
@@ -217,9 +244,28 @@ trait Singleton {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function get_class_name_slug() {
+		! isset( $this->_class_name_slug ) and $this->_class_name_slug = strtolower( str_replace( [ '_', '\\' ], [ '-', '_' ], $this->get_class_name() ) );
+
+		return $this->_class_name_slug;
+	}
+
+	/**
 	 * @return \ReflectionClass
 	 */
 	public function get_reflection() {
 		return $this->_reflection;
+	}
+
+	/**
+	 * @param string $name
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	public function __call( $name, array $args ) {
+		return $this->app->deprecated->call( static::class, $this, $name, $args );
 	}
 }

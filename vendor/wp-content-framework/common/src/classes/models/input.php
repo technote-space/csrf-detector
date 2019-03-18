@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Common Classes Models Input
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.29
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -59,7 +58,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function get( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_GET : $this->app->utility->array_get( $_GET, $key, $default );
+		return func_num_args() === 0 ? $_GET : $this->app->array->get( $_GET, $key, $default );
 	}
 
 	/**
@@ -84,7 +83,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function post( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_POST : $this->app->utility->array_get( $_POST, $key, $default );
+		return func_num_args() === 0 ? $_POST : $this->app->array->get( $_POST, $key, $default );
 	}
 
 	/**
@@ -109,7 +108,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function request( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_REQUEST : $this->app->utility->array_get( $_REQUEST, $key, $default );
+		return func_num_args() === 0 ? $_REQUEST : $this->app->array->get( $_REQUEST, $key, $default );
 	}
 
 	/**
@@ -134,7 +133,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function file( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_FILES : $this->app->utility->array_get( $_FILES, $key, $default );
+		return func_num_args() === 0 ? $_FILES : $this->app->array->get( $_FILES, $key, $default );
 	}
 
 	/**
@@ -144,7 +143,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function cookie( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_COOKIE : $this->app->utility->array_get( $_COOKIE, $key, $default );
+		return func_num_args() === 0 ? $_COOKIE : $this->app->array->get( $_COOKIE, $key, $default );
 	}
 
 	/**
@@ -154,7 +153,7 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	 * @return mixed
 	 */
 	public function server( $key = null, $default = null ) {
-		return func_num_args() === 0 ? $_SERVER : $this->app->utility->array_get( $_SERVER, strtoupper( $key ), $default );
+		return func_num_args() === 0 ? $_SERVER : $this->app->array->get( $_SERVER, strtoupper( $key ), $default );
 	}
 
 	/**
@@ -185,12 +184,46 @@ class Input implements \WP_Framework_Core\Interfaces\Singleton {
 	}
 
 	/**
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function referer( $default = '' ) {
+		return $this->server( 'HTTP_REFERER', $default );
+	}
+
+	/**
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function referer_host( $default = '' ) {
+		$referer = $this->referer();
+		if ( empty( $referer ) ) {
+			return $default;
+		}
+
+		return $this->app->array->get( parse_url( $referer ), 'host', $default );
+	}
+
+	/**
+	 * @param string $default
+	 *
+	 * @return string
+	 */
+	public function host( $default = '' ) {
+		return $this->server( 'HTTP_HOST', $default );
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function is_post() {
 		return ! in_array( $this->method(), [
 			'GET',
 			'HEAD',
+			'TRACE',
+			'OPTIONS',
 		] );
 	}
 

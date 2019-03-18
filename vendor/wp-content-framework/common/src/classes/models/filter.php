@@ -2,10 +2,9 @@
 /**
  * WP_Framework_Common Classes Models Filter
  *
- * @version 0.0.1
- * @author technote-space
- * @since 0.0.1
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.29
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -28,6 +27,12 @@ class Filter implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	 * @var array $_target_app
 	 */
 	private $_target_app = [];
+
+	/**
+	 * for debug
+	 * @var array $_elapsed
+	 */
+	private $_elapsed = [];
 
 	/**
 	 * initialize
@@ -57,21 +62,18 @@ class Filter implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	 * @param array $methods
 	 */
 	public function register_filter( $class, $tag, array $methods ) {
-		$tag = $this->app->utility->replace( $tag, [ 'prefix' => $this->get_filter_prefix() ] );
+		$tag = $this->app->string->replace( $tag, [ 'prefix' => $this->get_filter_prefix(), 'framework' => $this->get_framework_filter_prefix() ] );
 		if ( empty( $class ) || empty( $tag ) || ! is_array( $methods ) ) {
 			return;
 		}
-		foreach ( $methods as $method => $params ) {
-			if ( ! is_array( $params ) && is_string( $params ) ) {
-				$method = $params;
-				$params = [];
-			}
-			if ( empty( $method ) || ! is_string( $method ) ) {
+		foreach ( $methods as $key => $value ) {
+			list( $method, $params ) = $this->parse_method_params( $key, $value );
+			if ( empty( $method ) || ! is_string( $method ) || ! is_array( $params ) ) {
 				continue;
 			}
 			list( $priority, $accepted_args ) = $this->get_filter_params( $params );
-			add_filter( $tag, function () use ( $class, $method ) {
-				return $this->call_filter_callback( $class, $method, func_get_args() );
+			add_filter( $tag, function () use ( $tag, $class, $method ) {
+				return $this->call_filter_callback( $tag, $class, $method, func_get_args() );
 			}, $priority, $accepted_args );
 		}
 	}
@@ -116,6 +118,23 @@ class Filter implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	}
 
 	/**
+	 * @param mixed $key
+	 * @param mixed $value
+	 *
+	 * @return array
+	 */
+	private function parse_method_params( $key, $value ) {
+		if ( is_int( $key ) && is_string( $value ) ) {
+			return [ $value, [] ];
+		}
+		if ( is_string( $key ) && is_int( $value ) ) {
+			return [ $key, [ $value ] ];
+		}
+
+		return [ $key, $value ];
+	}
+
+	/**
 	 * @param array $params
 	 *
 	 * @return array
@@ -136,23 +155,66 @@ class Filter implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_C
 	}
 
 	/**
+	 * @param string $tag
 	 * @param string $class
 	 * @param string $method
 	 * @param array $args
 	 *
 	 * @return mixed
 	 */
-	private function call_filter_callback( $class, $method, array $args ) {
-		$result = empty( $args ) ? null : reset( $args );
-		$app    = $this->get_target_app( $class );
-		if ( empty( $app ) ) {
-			return $result;
-		}
+	private function call_filter_callback( $tag, $class, $method, array $args ) {
+		return $this->run( $tag, $class, $method, function ( $args ) use ( $class, $method ) {
+			$result = empty( $args ) ? null : reset( $args );
+			$app    = $this->get_target_app( $class );
+			if ( empty( $app ) ) {
+				return $result;
+			}
 
-		if ( $app->is_filter_callable( $method ) ) {
-			return $app->filter_callback( $method, $args );
-		}
+			if ( $app->is_filter_callable( $method ) ) {
+				return $app->filter_callback( $method, $args );
+			}
+
+			return $result;
+		}, $args );
+	}
+
+	/**
+	 * @param string $tag
+	 * @param string $class
+	 * @param string $method
+	 * @param callable $callback
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	private function run( $tag, $class, $method, $callback, $args ) {
+		$start            = microtime( true ) * 1000;
+		$result           = $callback( $args );
+		$elapsed          = microtime( true ) * 1000 - $start;
+		$this->_elapsed[] = [ 'tag' => $tag, 'class' => $class, 'method' => $method, 'elapsed' => $elapsed ];
 
 		return $result;
+	}
+
+	/**
+	 * for debug
+	 * @return float
+	 */
+	public function get_elapsed() {
+		return $this->app->array->sum( $this->_elapsed, function ( $item ) {
+			return $item['elapsed'];
+		} );
+	}
+
+	/**
+	 * for debug
+	 * @return array
+	 */
+	public function get_elapsed_details() {
+		$elapsed = $this->get_elapsed();
+
+		return $this->app->array->map( $this->_elapsed, function ( $item ) use ( $elapsed ) {
+			return sprintf( '%10.6fms (%5.2f%%) : [%s] %s->%s', $item['elapsed'], ( $item['elapsed'] / $elapsed ) * 100, $item['tag'], $item['class'], $item['method'] );
+		} );
 	}
 }
