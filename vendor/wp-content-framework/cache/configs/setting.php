@@ -1,8 +1,8 @@
 <?php
 /**
- * WP_Framework_Log Configs Filter
+ * WP_Framework_Cache Configs Setting
  *
- * @version 0.0.15
+ * @version 0.0.7
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -15,12 +15,14 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 
 return [
 
-	'log' => [
-		'${prefix}app_initialize'       => [
-			'setup_shutdown',
-		],
-		'${prefix}post_load_admin_page' => [
-			'setup_settings',
+	'100' => [
+		'Performance' => [
+			'100' => [
+				'cache_type' => [
+					'label'   => 'Cache type (option or file)',
+					'default' => 'option',
+				],
+			],
 		],
 	],
 
