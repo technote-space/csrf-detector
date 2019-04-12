@@ -15,7 +15,7 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 return [
 
 	// update
-	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/develop/update.json',
+	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/master/update.json',
 
 	// menu image url
 	'menu_image'                     => 'icon-24x24.png',
