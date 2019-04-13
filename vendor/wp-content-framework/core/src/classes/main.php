@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Core Classes Main
  *
- * @version 0.0.46
+ * @version 0.0.53
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -31,6 +31,7 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
  * @property \WP_Framework_Common\Classes\Models\User $user
  * @property \WP_Framework_Common\Classes\Models\Input $input
  * @property \WP_Framework_Common\Classes\Models\Deprecated $deprecated
+ * @property \WP_Framework_Common\Classes\Models\System $system
  * @property \WP_Framework_Db\Classes\Models\Db $db
  * @property \WP_Framework_Log\Classes\Models\Log $log
  * @property \WP_Framework_Admin\Classes\Models\Admin $admin
@@ -71,11 +72,6 @@ class Main {
 	 * @var bool $_initialized
 	 */
 	private $_initialized = false;
-
-	/**
-	 * @var array $_plugin_data
-	 */
-	private $_plugin_data;
 
 	/**
 	 * @var array $_properties
@@ -151,10 +147,6 @@ class Main {
 	 * initialize
 	 */
 	protected function initialize() {
-		if ( ! function_exists( 'get_plugin_data' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-		$this->_plugin_data              = $this->app->is_theme ? wp_get_theme() : get_plugin_data( $this->app->plugin_file, false, false );
 		$this->_properties               = [];
 		$this->_class_target_package     = [];
 		$this->_namespace_target_package = [];
@@ -238,8 +230,8 @@ class Main {
 	public function load_class( $class ) {
 		$dirs  = null;
 		$class = ltrim( $class, '\\' );
-		if ( isset( $this->_property_instances[ $this->_properties['define'] ] ) && preg_match( "#\A{$this->define->plugin_namespace}#", $class ) ) {
-			$class = preg_replace( "#\A{$this->define->plugin_namespace}#", '', $class );
+		if ( isset( $this->_property_instances[ $this->_properties['define'] ] ) && preg_match( "#\A{$this->define->plugin_namespace}(.+)\z#", $class, $matches ) ) {
+			$class = $matches[1];
 			$dirs  = $this->define->plugin_src_dir;
 		} elseif ( isset( $this->_class_target_package[ $class ] ) ) {
 			if ( array_key_exists( $class, $this->_alternative_instances ) ) {
@@ -290,27 +282,6 @@ class Main {
 		$this->_initialized = true;
 
 		$this->filter->do_action( 'app_initialize', $this );
-		$this->setup_property();
-		$this->filter->do_action( 'app_initialized', $this );
-
-		if ( ! $this->option->is_app_activated() ) {
-			$this->filter->do_action( 'app_activated' );
-		}
-	}
-
-	/**
-	 * setup property
-	 */
-	private function setup_property() {
-		if ( $this->app->is_uninstall() ) {
-			foreach ( $this->_properties as $name => $class ) {
-				if ( ! $this->app->is_valid_package( $name ) ) {
-					continue;
-				}
-				$this->$name;
-			}
-			$this->uninstall->get_class_list();
-		}
 	}
 
 	/**
@@ -339,19 +310,25 @@ class Main {
 	}
 
 	/**
-	 * @param string|null $key
-	 *
-	 * @return array|string
+	 * @deprecated
+	 * @return string
 	 */
-	public function get_plugin_data( $key = null ) {
-		return empty( $key ) ? $this->_plugin_data : $this->_plugin_data[ $key ];
+	public function get_plugin_uri() {
+		return $this->app->get_plugin_data( $this->app->is_theme ? 'ThemeURI' : 'PluginURI' );
 	}
 
 	/**
-	 * @return string
+	 * @deprecated
+	 * @return array
 	 */
-	public function get_plugin_version() {
-		return $this->get_plugin_data( 'Version' );
+	public function get_package_versions() {
+		return $this->app->array->combine( array_map( function ( $package ) {
+			/** @var \WP_Framework\Package_Base $package */
+			return [
+				'version' => $package->get_version(),
+				'package' => $package->get_package(),
+			];
+		}, $this->app->get_packages() ), 'package', 'version' );
 	}
 
 	/**
@@ -632,5 +609,28 @@ class Main {
 	 */
 	public function lock_process( $name, callable $func, $timeout = 60 ) {
 		return $this->utility->lock_process( $this->app, $name, $func, $timeout );
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function is_enough_version() {
+		if ( ! isset( $this->_property_instances[ $this->_properties['system'] ] ) ) {
+			return true;
+		}
+
+		return $this->system->is_enough_version();
+	}
+
+	/**
+	 * load all packages
+	 */
+	public function load_all_packages() {
+		foreach ( $this->_properties as $name => $class ) {
+			if ( ! $this->app->is_valid_package( $name ) ) {
+				continue;
+			}
+			$this->$name;
+		}
 	}
 }

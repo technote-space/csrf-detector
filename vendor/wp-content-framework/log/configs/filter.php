@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Log Configs Filter
  *
- * @version 0.0.1
+ * @version 0.0.15
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -16,10 +16,10 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 return [
 
 	'log' => [
-		'${prefix}app_initialize'  => [
+		'${prefix}app_initialize'       => [
 			'setup_shutdown',
 		],
-		'${prefix}app_initialized' => [
+		'${prefix}post_load_admin_page' => [
 			'setup_settings',
 		],
 	],

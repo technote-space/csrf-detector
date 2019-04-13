@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.15
+ * @version 0.0.16
  * @author Technote
  * @since 0.0.1
  * @copyright Technote All Rights Reserved
@@ -163,9 +163,11 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 				return false;
 			}
 		}
-		if ( $is_admin && ! $this->app->input->is_post() ) {
+		if ( ! $this->app->input->is_post() ) {
 			$params = $this->app->input->get();
-			unset( $params['page'] );
+			if ( $is_admin ) {
+				unset( $params['page'] );
+			}
 			if ( empty( $params ) ) {
 				// ページの表示のみ
 				// GETパラメータによる操作等がないため除外

@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Log Configs Config
  *
- * @version 0.0.13
+ * @version 0.0.15
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -51,6 +51,7 @@ return [
 	'suppress_log_messages'  => [
 		'Non-static method WP_Feed_Cache::create() should not be called statically',
 		'Automatically populating $HTTP_RAW_POST_DATA is deprecated and will be removed in a future version. To avoid this warning set \'always_populate_raw_post_data\' to \'-1\' in php.ini and use the php://input stream instead.',
+		'call_user_func_array() expects parameter 1 to be a valid callback, non-static method WP_Feed_Cache::create() should not be called statically',
 	],
 
 ];

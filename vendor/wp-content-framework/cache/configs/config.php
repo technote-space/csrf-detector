@@ -2,7 +2,7 @@
 /**
  * WP_Framework_Cache Configs Config
  *
- * @version 0.0.5
+ * @version 0.0.12
  * @author Technote
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
@@ -15,7 +15,10 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 
 return [
 
-	// cache type (option, class name)
-	'cache_type' => 'option',
+	// delete cache group
+	'delete_cache_group'        => [],
+
+	// delete cache common group
+	'delete_cache_common_group' => [],
 
 ];
