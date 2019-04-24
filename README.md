@@ -86,6 +86,7 @@ add_action( 'csrf_detector/csrf_detected', function ( $query, $backtrace, $targe
 * このプラグインで検知された場合でもCSRFではない場合があります。  
   * 例：プラグイン内部での更新動作（アクセスするユーザの権限に関係なくサイトへのアクセスを起点に何か更新を行う場合）
 * 全てのCSRFを検知することはできません。
+  * init アクションより後が監視対象であるため、プラグインの読み込みと同時に更新するようなプラグインは検出できません
 
 # Author
 [GitHub (Technote)](https://github.com/technote-space)  
