@@ -15,12 +15,6 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 ?>
 
 <style>
-    #<?php $instance->id(); ?>-dashboard {
-        display: table;
-        margin: 15px 10px;
-        width: 100%;
-    }
-
     #<?php $instance->id(); ?>-main-contents .form-table {
         width: auto;
     }
