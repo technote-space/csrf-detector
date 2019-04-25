@@ -236,7 +236,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			}
 		}
 		if ( $is_admin && ! isset( $_GET['page'] ) ) {
-			// 対象はプラグイン等で追加されたページだけ
+			// 管理画面の対象はプラグイン等で追加されたページだけ (ajaxも除外)
 			return false;
 		}
 		if ( $this->app->utility->doing_cron() ) {
