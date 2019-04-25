@@ -231,6 +231,10 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 				// フロント（管理画面以外）を除外
 				return false;
 			}
+			if ( $this->apply_filters( 'exclude_get_front' ) && ! $this->app->input->is_post() ) {
+				// フロント（管理画面以外） かつ GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
+				return false;
+			}
 		}
 
 		if ( $this->apply_filters( 'exclude_get_method' ) && ! $this->app->input->is_post() ) {

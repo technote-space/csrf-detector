@@ -59,6 +59,11 @@ return [
 					'type'    => 'bool',
 					'default' => true,
 				],
+				'exclude_get_front'     => [
+					'label'   => 'Whether to exclude get front',
+					'type'    => 'bool',
+					'default' => true,
+				],
 			],
 		],
 	],
