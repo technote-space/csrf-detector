@@ -39,5 +39,11 @@ return [
 		'${framework}finished_db_update' => [
 			'finished_db_update',
 		],
+		'${prefix}app_initialize'        => [
+			'setup_settings',
+		],
+		'${prefix}logs_page_priority'    => [
+			'logs_page_priority',
+		],
 	],
 ];

@@ -65,52 +65,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
-	 * check admin validity
-	 */
-	private function check_admin_validity() {
-		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
-			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
-			$this->app->add_message( '[wp_verify_nonce] function has already been defined by other plugin or theme', 'error', true );
-			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
-
-			return;
-		}
-		if ( ! $this->check( true ) ) {
-			return;
-		}
-		if ( ! isset( $_GET['page'] ) ) {
-			return;
-		}
-
-		$this->_is_valid_detector = true;
-		if ( empty( $this->get_check_pattern() ) ) {
-			$this->_is_valid_detector = false;
-			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
-			$this->app->add_message( sprintf( $this->translate( '[%s] is invalid: [%s]' ), $this->translate( 'Target commands' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
-			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
-		}
-	}
-
-	/**
-	 * check not admin validity
-	 */
-	private function check_not_admin_validity() {
-		if ( ! $this->check( false ) ) {
-			return;
-		}
-		if ( ! $this->app->utility->definedv( 'WP_USE_THEMES' ) ) {
-			if ( $this->app->utility->definedv( 'DOING_CRON' ) || $this->app->utility->definedv( 'WP_ADMIN' ) ) {
-				return;
-			}
-		}
-
-		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
-		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
-			$this->_is_valid_detector = false;
-		}
-	}
-
-	/**
 	 * verified nonce
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
@@ -132,6 +86,112 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function finished_db_update() {
 		$this->_db_update = false;
+	}
+
+	/**
+	 * @param string $query
+	 *
+	 * @return string
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function check_query( $query ) {
+		if ( preg_match( '/^SHOW FULL COLUMNS FROM\s/', $query ) ) {
+			return $query;
+		}
+
+		$ignore              = $this->_ignore_check;
+		$this->_ignore_check = false;
+		if ( ! $this->_is_valid_detector || $ignore || $this->_db_update ) {
+			return $query;
+		}
+
+		if ( @preg_match( $this->get_check_pattern(), $query ) ) {
+			$this->detect_db_update( $query );
+		}
+
+		return $query;
+	}
+
+	/**
+	 * @param string $option
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function update_option( $option ) {
+		$this->_ignore_check = $this->check_ignore_option( $option );
+	}
+
+	/**
+	 * @param string $option
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function add_option( $option ) {
+		$this->_ignore_check = $this->check_ignore_option( $option );
+	}
+
+	/**
+	 * @param string $option
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function delete_option( $option ) {
+		$this->_ignore_check = $this->check_ignore_option( $option );
+	}
+
+	/**
+	 * setup settings
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function setup_settings() {
+		$this->app->setting->edit_setting( 'is_valid_log', 'default', true );
+		$this->app->setting->remove_setting( 'capture_shutdown_error' );
+		$this->app->setting->remove_setting( 'minify_js' );
+		$this->app->setting->remove_setting( 'minify_css' );
+		$this->app->setting->remove_setting( 'assets_version' );
+	}
+
+	/**
+	 * @return int
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function logs_page_priority() {
+		return 50;
+	}
+
+	/**
+	 * check admin validity
+	 */
+	private function check_admin_validity() {
+		if ( empty( $this->app->utility->defined( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( '[wp_verify_nonce] function has already been defined by other plugin or theme', 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
+
+			return;
+		}
+		if ( ! $this->check( true ) ) {
+			return;
+		}
+
+		$this->_is_valid_detector = true;
+		if ( empty( $this->get_check_pattern() ) ) {
+			$this->_is_valid_detector = false;
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( sprintf( $this->translate( '[%s] is invalid: [%s]' ), $this->translate( 'Target commands' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
+		}
+	}
+
+	/**
+	 * check not admin validity
+	 */
+	private function check_not_admin_validity() {
+		if ( ! $this->check( false ) ) {
+			return;
+		}
+
+		$this->_is_valid_detector = ! empty( $this->app->utility->defined( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
+		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
+			$this->_is_valid_detector = false;
+		}
 	}
 
 	/**
@@ -174,55 +234,16 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 				return false;
 			}
 		}
+		if ( $is_admin && ! isset( $_GET['page'] ) ) {
+			// 対象はプラグイン等で追加されたページだけ
+			return false;
+		}
+		if ( $this->app->utility->doing_cron() ) {
+			// cronは除外
+			return false;
+		}
 
 		return true;
-	}
-
-	/**
-	 * @param string $query
-	 *
-	 * @return string
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function check_query( $query ) {
-		if ( preg_match( '/^SHOW FULL COLUMNS FROM\s/', $query ) ) {
-			return $query;
-		}
-		$ignore              = $this->_ignore_check;
-		$this->_ignore_check = false;
-		if ( ! $this->_is_valid_detector || $ignore || $this->_db_update ) {
-			return $query;
-		}
-
-		if ( @preg_match( $this->get_check_pattern(), $query ) ) {
-			$this->detect_db_update( $query );
-		}
-
-		return $query;
-	}
-
-	/**
-	 * @param string $option
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function update_option( $option ) {
-		$this->_ignore_check = $this->check_ignore_option( $option );
-	}
-
-	/**
-	 * @param string $option
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function add_option( $option ) {
-		$this->_ignore_check = $this->check_ignore_option( $option );
-	}
-
-	/**
-	 * @param string $option
-	 */
-	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function delete_option( $option ) {
-		$this->_ignore_check = $this->check_ignore_option( $option );
 	}
 
 	/**
@@ -340,7 +361,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private function get_target_plugin_or_theme( $backtrace ) {
 		foreach ( $backtrace as $value ) {
 			if ( isset( $value['file'] ) && preg_match( '#/(themes|plugins)/([^/]+)/#', $value['file'], $matches ) ) {
-				$target = substr( $matches[1], 0, - 1 );
+				$target = substr( $matches[1], 0, -1 );
 
 				return "$target: {$matches[2]}";
 			}
