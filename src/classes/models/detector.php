@@ -167,7 +167,8 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 
 			return;
 		}
-		if ( ! $this->check( true ) ) {
+
+		if ( ! $this->apply_filters( 'admin_validity', $this->check( true ) ) ) {
 			return;
 		}
 
@@ -184,7 +185,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 * check not admin validity
 	 */
 	private function check_not_admin_validity() {
-		if ( ! $this->check( false ) ) {
+		if ( ! $this->apply_filters( 'not_admin_validity', $this->check( false ) ) ) {
 			return;
 		}
 
