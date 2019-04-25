@@ -204,10 +204,35 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
 			return false;
 		}
-		if ( ! $is_admin && $this->apply_filters( 'exclude_front' ) ) {
-			// フロント（管理画面以外）を除外
+		if ( $this->app->utility->doing_cron() ) {
+			// cronは除外
 			return false;
 		}
+
+		$params = $this->app->input->get();
+		if ( ! $this->app->input->is_post() ) {
+			if ( $is_admin ) {
+				unset( $params['page'] );
+			}
+			if ( empty( $params ) ) {
+				// ページの表示のみ
+				// GETパラメータによる操作等がないため除外
+				return false;
+			}
+		}
+
+		if ( $is_admin ) {
+			if ( ! isset( $params['page'] ) ) {
+				// 管理画面の対象はプラグイン等で追加されたページだけ (ajaxも除外)
+				return false;
+			}
+		} else {
+			if ( $this->apply_filters( 'exclude_front' ) ) {
+				// フロント（管理画面以外）を除外
+				return false;
+			}
+		}
+
 		if ( $this->apply_filters( 'exclude_get_method' ) && ! $this->app->input->is_post() ) {
 			// GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
 			return false;
@@ -223,25 +248,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 				// 管理画面からの送信を除外
 				return false;
 			}
-		}
-		if ( ! $this->app->input->is_post() ) {
-			$params = $this->app->input->get();
-			if ( $is_admin ) {
-				unset( $params['page'] );
-			}
-			if ( empty( $params ) ) {
-				// ページの表示のみ
-				// GETパラメータによる操作等がないため除外
-				return false;
-			}
-		}
-		if ( $is_admin && ! isset( $_GET['page'] ) ) {
-			// 管理画面の対象はプラグイン等で追加されたページだけ (ajaxも除外)
-			return false;
-		}
-		if ( $this->app->utility->doing_cron() ) {
-			// cronは除外
-			return false;
 		}
 
 		return true;
