@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.16
+ * @version 0.0.17
  * @author Technote
  * @since 0.0.1
  * @copyright Technote All Rights Reserved
@@ -65,52 +65,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
-	 * check admin validity
-	 */
-	private function check_admin_validity() {
-		if ( empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
-			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
-			$this->app->add_message( '[wp_verify_nonce] function has already been defined by other plugin or theme', 'error', true );
-			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
-
-			return;
-		}
-		if ( ! $this->check( true ) ) {
-			return;
-		}
-		if ( ! isset( $_GET['page'] ) ) {
-			return;
-		}
-
-		$this->_is_valid_detector = true;
-		if ( empty( $this->get_check_pattern() ) ) {
-			$this->_is_valid_detector = false;
-			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
-			$this->app->add_message( sprintf( $this->translate( '[%s] is invalid: [%s]' ), $this->translate( 'Target commands' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
-			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
-		}
-	}
-
-	/**
-	 * check not admin validity
-	 */
-	private function check_not_admin_validity() {
-		if ( ! $this->check( false ) ) {
-			return;
-		}
-		if ( ! $this->app->utility->definedv( 'WP_USE_THEMES' ) ) {
-			if ( $this->app->utility->definedv( 'DOING_CRON' ) || $this->app->utility->definedv( 'WP_ADMIN' ) ) {
-				return;
-			}
-		}
-
-		$this->_is_valid_detector = ! empty( $this->app->utility->definedv( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
-		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
-			$this->_is_valid_detector = false;
-		}
-	}
-
-	/**
 	 * verified nonce
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
@@ -135,50 +89,6 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	}
 
 	/**
-	 * @param bool $is_admin
-	 *
-	 * @return bool
-	 */
-	private function check( $is_admin ) {
-		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
-			return false;
-		}
-		if ( ! $is_admin && $this->apply_filters( 'exclude_front' ) ) {
-			// フロント（管理画面以外）を除外
-			return false;
-		}
-		if ( $this->apply_filters( 'exclude_get_method' ) && ! $this->app->input->is_post() ) {
-			// GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
-			return false;
-		}
-		if ( $this->apply_filters( 'exclude_same_host' ) ) {
-			if ( ! $this->app->utility->is_changed_host() ) {
-				// hostに変化がない場合を除外
-				return false;
-			}
-		}
-		if ( $this->apply_filters( 'exclude_admin_referer' ) ) {
-			if ( $this->app->utility->was_admin() ) {
-				// 管理画面からの送信を除外
-				return false;
-			}
-		}
-		if ( ! $this->app->input->is_post() ) {
-			$params = $this->app->input->get();
-			if ( $is_admin ) {
-				unset( $params['page'] );
-			}
-			if ( empty( $params ) ) {
-				// ページの表示のみ
-				// GETパラメータによる操作等がないため除外
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	/**
 	 * @param string $query
 	 *
 	 * @return string
@@ -188,6 +98,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 		if ( preg_match( '/^SHOW FULL COLUMNS FROM\s/', $query ) ) {
 			return $query;
 		}
+
 		$ignore              = $this->_ignore_check;
 		$this->_ignore_check = false;
 		if ( ! $this->_is_valid_detector || $ignore || $this->_db_update ) {
@@ -223,6 +134,127 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function delete_option( $option ) {
 		$this->_ignore_check = $this->check_ignore_option( $option );
+	}
+
+	/**
+	 * setup settings
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function setup_settings() {
+		$this->app->setting->edit_setting( 'is_valid_log', 'default', true );
+		$this->app->setting->remove_setting( 'capture_shutdown_error' );
+		$this->app->setting->remove_setting( 'minify_js' );
+		$this->app->setting->remove_setting( 'minify_css' );
+		$this->app->setting->remove_setting( 'assets_version' );
+	}
+
+	/**
+	 * @return int
+	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
+	private function logs_page_priority() {
+		return 50;
+	}
+
+	/**
+	 * check admin validity
+	 */
+	private function check_admin_validity() {
+		if ( empty( $this->app->utility->defined( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) ) ) {
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( '[wp_verify_nonce] function has already been defined by other plugin or theme', 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
+
+			return;
+		}
+
+		if ( ! $this->apply_filters( 'admin_validity', $this->check( true ) ) ) {
+			return;
+		}
+
+		$this->_is_valid_detector = true;
+		if ( empty( $this->get_check_pattern() ) ) {
+			$this->_is_valid_detector = false;
+			$this->app->add_message( '<h3>CSRF Detector</h3>', 'error', true, false );
+			$this->app->add_message( sprintf( $this->translate( '[%s] is invalid: [%s]' ), $this->translate( 'Target commands' ), $this->apply_filters( 'target_commands' ) ), 'error', true );
+			$this->app->add_message( 'so [CSRF Detector] is not available', 'error', true );
+		}
+	}
+
+	/**
+	 * check not admin validity
+	 */
+	private function check_not_admin_validity() {
+		if ( ! $this->apply_filters( 'not_admin_validity', $this->check( false ) ) ) {
+			return;
+		}
+
+		$this->_is_valid_detector = ! empty( $this->app->utility->defined( 'CSRF_DETECTOR_FUNCTION_DEFINED' ) );
+		if ( $this->_is_valid_detector && empty( $this->get_check_pattern() ) ) {
+			$this->_is_valid_detector = false;
+		}
+	}
+
+	/**
+	 * @param bool $is_admin
+	 *
+	 * @return bool
+	 */
+	private function check( $is_admin ) {
+		if ( ! $this->apply_filters( 'is_valid_detect' ) ) {
+			return false;
+		}
+		if ( $this->app->utility->doing_cron() ) {
+			// cronは除外
+			return false;
+		}
+
+		$params = $this->app->input->get();
+		if ( ! $this->app->input->is_post() ) {
+			if ( $is_admin ) {
+				unset( $params['page'] );
+			}
+			if ( empty( $params ) ) {
+				// ページの表示のみ
+				// GETパラメータによる操作等がないため除外
+				return false;
+			}
+		}
+
+		if ( $is_admin ) {
+			if ( ! isset( $params['page'] ) ) {
+				// 管理画面の対象はプラグイン等で追加されたページだけ (ajaxも除外)
+				return false;
+			}
+		} else {
+			if ( $this->apply_filters( 'exclude_front' ) ) {
+				// フロント（管理画面以外）を除外
+				return false;
+			}
+			if ( $this->apply_filters( 'exclude_get_front' ) && ! $this->app->input->is_post() ) {
+				// フロント（管理画面以外） かつ GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
+				return false;
+			}
+		}
+
+		if ( $this->apply_filters( 'exclude_get_method' ) && ! $this->app->input->is_post() ) {
+			// GETメソッド(GET, HEAD, TRACE, OPTIONS) を除外
+			return false;
+		}
+		if ( $this->apply_filters( 'exclude_same_host' ) ) {
+			if ( ! $this->app->utility->is_changed_host() ) {
+				// hostに変化がない場合を除外
+				return false;
+			}
+		}
+		if ( $this->apply_filters( 'exclude_admin_referer' ) ) {
+			if ( $this->app->utility->was_admin() ) {
+				// 管理画面からの送信を除外
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -340,7 +372,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private function get_target_plugin_or_theme( $backtrace ) {
 		foreach ( $backtrace as $value ) {
 			if ( isset( $value['file'] ) && preg_match( '#/(themes|plugins)/([^/]+)/#', $value['file'], $matches ) ) {
-				$target = substr( $matches[1], 0, - 1 );
+				$target = substr( $matches[1], 0, -1 );
 
 				return "$target: {$matches[2]}";
 			}

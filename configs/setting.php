@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.1
+ * @version 0.0.17
  * @author Technote
  * @since 0.0.1
  * @copyright Technote All Rights Reserved
@@ -56,6 +56,11 @@ return [
 				],
 				'exclude_admin_referer' => [
 					'label'   => 'Whether to exclude admin referer',
+					'type'    => 'bool',
+					'default' => true,
+				],
+				'exclude_get_front'     => [
+					'label'   => 'Whether to exclude get front',
 					'type'    => 'bool',
 					'default' => true,
 				],

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.16
+ * @version 0.0.17
  * @author Technote
  * @since 0.0.7
  * @copyright Technote All Rights Reserved
@@ -15,12 +15,6 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 ?>
 
 <style>
-    #<?php $instance->id(); ?>-dashboard {
-        display: table;
-        margin: 15px 10px;
-        width: 100%;
-    }
-
     #<?php $instance->id(); ?>-main-contents .form-table {
         width: auto;
     }

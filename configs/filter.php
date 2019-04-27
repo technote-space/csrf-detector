@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.15
+ * @version 0.0.17
  * @author Technote
  * @since 0.0.1
  * @copyright Technote All Rights Reserved
@@ -38,6 +38,12 @@ return [
 		],
 		'${framework}finished_db_update' => [
 			'finished_db_update',
+		],
+		'${prefix}app_initialize'        => [
+			'setup_settings',
+		],
+		'${prefix}logs_page_priority'    => [
+			'logs_page_priority',
 		],
 	],
 ];
