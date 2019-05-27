@@ -117,25 +117,25 @@
         },
         {
             "name": "symfony/css-selector",
-            "version": "v3.4.26",
+            "version": "v4.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/css-selector.git",
-                "reference": "8ca29297c29b64fb3a1a135e71cb25f67f9fdccf"
+                "reference": "48eddf66950fa57996e1be4a55916d65c10c604a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/css-selector/zipball/8ca29297c29b64fb3a1a135e71cb25f67f9fdccf",
-                "reference": "8ca29297c29b64fb3a1a135e71cb25f67f9fdccf",
+                "url": "https://api.github.com/repos/symfony/css-selector/zipball/48eddf66950fa57996e1be4a55916d65c10c604a",
+                "reference": "48eddf66950fa57996e1be4a55916d65c10c604a",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.5.9|>=7.0.8"
+                "php": "^7.1.3"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.4-dev"
+                    "dev-master": "4.2-dev"
                 }
             },
             "autoload": {
@@ -166,7 +166,7 @@
             ],
             "description": "Symfony CssSelector Component",
             "homepage": "https://symfony.com",
-            "time": "2019-01-16T09:39:14+00:00"
+            "time": "2019-01-16T20:31:39+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -542,16 +542,16 @@
         },
         {
             "name": "wp-content-framework/mail",
-            "version": "v0.0.6",
+            "version": "v0.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-content-framework/mail.git",
-                "reference": "7c8d875f7dedd51e4ffa9aaed7ba30b7061cec5e"
+                "reference": "d916a5af740332361c6983b220a767662cf9927c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-content-framework/mail/zipball/7c8d875f7dedd51e4ffa9aaed7ba30b7061cec5e",
-                "reference": "7c8d875f7dedd51e4ffa9aaed7ba30b7061cec5e",
+                "url": "https://api.github.com/repos/wp-content-framework/mail/zipball/d916a5af740332361c6983b220a767662cf9927c",
+                "reference": "d916a5af740332361c6983b220a767662cf9927c",
                 "shasum": ""
             },
             "require": {
@@ -577,20 +577,20 @@
                 "framework",
                 "wordpress"
             ],
-            "time": "2019-02-12T17:50:19+00:00"
+            "time": "2019-05-19T15:02:06+00:00"
         },
         {
             "name": "wp-content-framework/presenter",
-            "version": "v0.0.19",
+            "version": "v0.0.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/wp-content-framework/presenter.git",
-                "reference": "926a4c7743ce0d2c2b66d59f8adc66f9c15bd36f"
+                "reference": "a78e2b2d516120b95c1f403e30985f9132a5942b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/wp-content-framework/presenter/zipball/926a4c7743ce0d2c2b66d59f8adc66f9c15bd36f",
-                "reference": "926a4c7743ce0d2c2b66d59f8adc66f9c15bd36f",
+                "url": "https://api.github.com/repos/wp-content-framework/presenter/zipball/a78e2b2d516120b95c1f403e30985f9132a5942b",
+                "reference": "a78e2b2d516120b95c1f403e30985f9132a5942b",
                 "shasum": ""
             },
             "require": {
@@ -615,7 +615,7 @@
                 "framework",
                 "wordpress"
             ],
-            "time": "2019-04-18T07:09:43+00:00"
+            "time": "2019-05-15T16:01:07+00:00"
         },
         {
             "name": "wp-content-framework/update",
