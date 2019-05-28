@@ -2,9 +2,9 @@
 /**
  * WP_Framework_Mail Classes Models Mail
  *
- * @version 0.0.1
- * @author technote-space
- * @copyright technote-space All Rights Reserved
+ * @version 0.0.7
+ * @author Technote
+ * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
  */
@@ -15,7 +15,13 @@ if ( ! defined( 'WP_CONTENT_FRAMEWORK' ) ) {
 	exit;
 }
 
+use PHPMailer;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
+use WP_Error;
+use WP_Framework_Core\Traits\Hook;
+use WP_Framework_Core\Traits\Singleton;
+use WP_Framework_Mail\Traits\Package;
+use WP_Framework_Presenter\Traits\Presenter;
 
 /**
  * Class Mail
@@ -23,7 +29,7 @@ use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
  */
 class Mail implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\Interfaces\Hook, \WP_Framework_Presenter\Interfaces\Presenter {
 
-	use \WP_Framework_Core\Traits\Singleton, \WP_Framework_Core\Traits\Hook, \WP_Framework_Presenter\Traits\Presenter, \WP_Framework_Mail\Traits\Package;
+	use Singleton, Hook, Presenter, Package;
 
 	/**
 	 * @var bool $_is_sending
@@ -82,7 +88,7 @@ class Mail implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Cor
 		// https://core.trac.wordpress.org/ticket/15448
 
 		add_action( 'phpmailer_init', $set_phpmailer = function ( $phpmailer ) use ( &$set_phpmailer, $messages, $content_type ) {
-			/** @var \PHPMailer $phpmailer */
+			/** @var PHPMailer $phpmailer */
 			remove_action( 'phpmailer_init', $set_phpmailer );
 			$phpmailer->Body    = '';
 			$phpmailer->AltBody = '';
@@ -144,10 +150,10 @@ class Mail implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Cor
 	}
 
 	/**
-	 * @param \WP_Error $wp_error
+	 * @param WP_Error $wp_error
 	 */
 	/** @noinspection PhpUnusedPrivateMethodInspection */
-	private function wp_mail_failed( \WP_Error $wp_error ) {
+	private function wp_mail_failed( WP_Error $wp_error ) {
 		if ( $this->_is_sending ) {
 			$this->app->log( $wp_error );
 		}

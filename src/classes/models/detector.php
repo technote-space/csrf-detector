@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.17
+ * @version 0.0.18
  * @author Technote
  * @since 0.0.1
  * @copyright Technote All Rights Reserved
@@ -9,6 +9,13 @@
  */
 
 namespace Csrf_Detector\Classes\Models;
+
+use Exception;
+use WP_Framework;
+use WP_Framework_Common\Traits\Package;
+use WP_Framework_Core\Traits\Hook;
+use WP_Framework_Core\Traits\Singleton;
+use WP_Framework_Presenter\Traits\Presenter;
 
 if ( ! defined( 'CSRF_DETECTOR' ) ) {
 	exit;
@@ -20,7 +27,7 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
  */
 class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework_Core\Interfaces\Hook, \WP_Framework_Presenter\Interfaces\Presenter {
 
-	use \WP_Framework_Core\Traits\Singleton, \WP_Framework_Core\Traits\Hook, \WP_Framework_Presenter\Traits\Presenter, \WP_Framework_Common\Traits\Package;
+	use Singleton, Hook, Presenter, Package;
 
 	/**
 	 * @var string|false $_check_pattern
@@ -338,10 +345,10 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 					'backtrace' => $backtrace,
 				], 'csrf' );
 				$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
-			} catch ( \Exception $e ) {
+			} catch ( Exception $e ) {
 			}
 			if ( $this->apply_filters( 'shutdown_if_detected' ) ) {
-				\WP_Framework::wp_die( [ $this->translate( 'CSRF detected' ), $target, $query ], __FILE__, __LINE__, '', false );
+				WP_Framework::wp_die( [ $this->translate( 'CSRF detected' ), $target, $query ], __FILE__, __LINE__, '', false );
 			}
 		}
 	}

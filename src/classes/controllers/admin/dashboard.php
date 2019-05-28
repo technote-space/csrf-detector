@@ -1,6 +1,6 @@
 <?php
 /**
- * @version 0.0.17
+ * @version 0.0.18
  * @author Technote
  * @since 0.0.7
  * @copyright Technote All Rights Reserved
@@ -10,6 +10,8 @@
 
 namespace Csrf_Detector\Classes\Controllers\Admin;
 
+use WP_Framework_Admin\Classes\Controllers\Admin\Base;
+
 if ( ! defined( 'CSRF_DETECTOR' ) ) {
 	exit;
 }
@@ -18,7 +20,7 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
  * Class Dashboard
  * @package Csrf_Detector\Classes\Controllers\Admin
  */
-class Dashboard extends \WP_Framework_Admin\Classes\Controllers\Admin\Base {
+class Dashboard extends Base {
 
 	use \WP_Framework_Admin\Traits\Dashboard;
 
