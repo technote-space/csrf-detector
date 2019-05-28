@@ -8,10 +8,12 @@
  * @link https://technote.space/
  */
 
+use WP_Framework_Presenter\Interfaces\Presenter;
+
 if ( ! defined( 'CSRF_DETECTOR' ) ) {
 	return;
 }
-/** @var \WP_Framework_Presenter\Interfaces\Presenter $instance */
+/** @var Presenter $instance */
 ?>
 
 <style>
