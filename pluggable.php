@@ -1,8 +1,6 @@
 <?php
 /**
- * @version 0.0.15
  * @author Technote
- * @since 0.0.1
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -26,7 +24,7 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 		}
 	}
 
-	function wp_verify_nonce( $nonce, $action = - 1 ) {
+	function wp_verify_nonce( $nonce, $action = -1 ) {
 		$nonce = (string) $nonce;
 		$user  = wp_get_current_user();
 		$uid   = (int) $user->ID;
@@ -34,10 +32,11 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			/**
 			 * Filters whether the user who generated the nonce is logged out.
 			 *
-			 * @since 3.5.0
-			 *
 			 * @param int $uid ID of the nonce-owning user.
 			 * @param string $action The nonce action.
+			 *
+			 * @since 3.5.0
+			 *
 			 */
 			$uid = apply_filters( 'nonce_user_logged_out', $uid, $action );
 		}
@@ -52,7 +51,7 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			$token = wp_get_session_token();
 
 			// Nonce generated 0-12 hours ago
-			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
+			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 			if ( hash_equals( $expected, $nonce ) ) {
 				csrf_detector_verified_nonce();
 
@@ -60,7 +59,7 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			}
 
 			// Nonce generated 12-24 hours ago
-			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), - 12, 10 );
+			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce' ), -12, 10 );
 			if ( hash_equals( $expected, $nonce ) ) {
 				csrf_detector_verified_nonce();
 
@@ -73,13 +72,13 @@ if ( ! function_exists( 'wp_verify_nonce' ) ) :
 			}
 		} else {
 			// Nonce generated 0-12 hours ago
-			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid, 'nonce' ), - 12, 10 );
+			$expected = substr( wp_hash( $i . '|' . $action . '|' . $uid, 'nonce' ), -12, 10 );
 			if ( hash_equals( $expected, $nonce ) ) {
 				return 1;
 			}
 
 			// Nonce generated 12-24 hours ago
-			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid, 'nonce' ), - 12, 10 );
+			$expected = substr( wp_hash( ( $i - 1 ) . '|' . $action . '|' . $uid, 'nonce' ), -12, 10 );
 			if ( hash_equals( $expected, $nonce ) ) {
 				return 2;
 			}
