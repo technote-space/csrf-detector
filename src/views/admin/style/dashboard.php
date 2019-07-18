@@ -1,8 +1,6 @@
 <?php
 /**
- * @version 0.0.18
  * @author Technote
- * @since 0.0.7
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space/
@@ -17,23 +15,23 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 ?>
 
 <style>
-    #<?php $instance->id(); ?>-main-contents .form-table {
-        width: auto;
-    }
+	#<?php $instance->id(); ?>-main-contents .form-table {
+		width: auto;
+	}
 
-    #<?php $instance->id(); ?>-main-contents .form-table th {
-        width: 30%;
-    }
+	#<?php $instance->id(); ?>-main-contents .form-table th {
+		width: 30%;
+	}
 
-    #<?php $instance->id(); ?>-main-contents .form-table td {
-        width: 70%;
-    }
+	#<?php $instance->id(); ?>-main-contents .form-table td {
+		width: 70%;
+	}
 
-    #<?php $instance->id(); ?>-main-contents select {
-        width: 120px;
-    }
+	#<?php $instance->id(); ?>-main-contents select {
+		width: 120px;
+	}
 
-    #<?php $instance->id(); ?>-main-contents input[type="text"] {
-        width: 100%;
-    }
+	#<?php $instance->id(); ?>-main-contents input[type="text"] {
+		width: 100%;
+	}
 </style>
