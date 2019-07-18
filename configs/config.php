@@ -1,8 +1,6 @@
 <?php
 /**
- * @version 0.0.15
  * @author Technote
- * @since 0.0.1
  * @copyright Technote All Rights Reserved
  * @license http://www.opensource.org/licenses/gpl-2.0.php GNU General Public License, version 2
  * @link https://technote.space
@@ -13,9 +11,11 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 }
 
 return [
-
 	// update
-	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/develop/update.json',
+	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/master/update.json',
+
+	// menu image url
+	'menu_image'                     => 'icon-24x24.png',
 
 	// suppress setting help contents
 	'suppress_setting_help_contents' => true,
@@ -58,5 +58,4 @@ return [
 
 	// github repo
 	'github_repo'                    => 'technote-space/csrf-detector',
-
 ];
