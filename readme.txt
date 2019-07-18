@@ -28,9 +28,6 @@ This plugin needs PHP5.6 or higher.
 
 == Screenshots ==
 
-1. Detected CSRF
-2. Log
-
 == Upgrade Notice ==
 
 == Changelog ==
