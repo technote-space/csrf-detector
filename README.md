@@ -10,6 +10,8 @@
 
 CSRFを検知するプラグインです。
 
+[最新バージョン](https://github.com/technote-space/csrf-detector/releases/latest/download/csrf-detector.zip)
+
 ## 要件
 
 - PHP 5.6 以上
@@ -22,9 +24,11 @@ CSRFを検知するプラグインです。
 ![log](https://raw.githubusercontent.com/technote-space/csrf-detector/images/assets/screenshot-2.png)
 
 ## 導入手順
-1. [ZIPをダウンロード](https://github.com/technote-space/csrf-detector/archive/master.zip)
-2. wp-content/plugins に展開
-3. プラグインを有効化
+1. 最新版をGitHubからダウンロード  
+[csrf-detector.zip](https://github.com/technote-space/csrf-detector/releases/latest/download/csrf-detector.zip)
+2. 「プラグインのアップロード」からインストール
+![install](https://raw.githubusercontent.com/technote-space/screenshots/master/misc/install-wp-plugin.png)
+3. プラグインを有効化 
 
 ## 機能
 **SQLの実行** 及び **nonceのチェック** を監視します。  
