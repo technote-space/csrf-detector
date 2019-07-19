@@ -4,7 +4,8 @@ Tags: CSRF, security
 Requires at least: 3.9.3
 Requires PHP: 5.6
 Tested up to: 5.2
-Stable tag: 0.0.18
+Stable tag: 0.0.19
+Donate link: https://paypal.me/technote0space
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,14 +28,7 @@ This plugin needs PHP5.6 or higher.
 
 == Screenshots ==
 
-1. Detected CSRF
-2. Log
-
 == Upgrade Notice ==
 
 == Changelog ==
-
-= 1.0.0 (2019/x/y) =
-
-* First release
 
