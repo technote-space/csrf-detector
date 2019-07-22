@@ -15,7 +15,8 @@ This plugin will detect csrf
 
 This plugin will detect csrf
 [日本語の説明](https://technote.space/csrf-detector "Documentation in Japanese")
-[GitHub](https://github.com/technote-space/csrf-detector)
+[GitHub (More details)](https://github.com/technote-space/csrf-detector)
+[Issues (Reporting a new bug or feature request)](https://github.com/technote-space/csrf-detector/issues)
 
 This plugin needs PHP5.6 or higher.
 
