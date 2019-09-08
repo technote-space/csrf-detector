@@ -32,9 +32,9 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	private $check_pattern;
 
 	/**
-	 * @var string|false $ignore_option_pattern
+	 * @var string|false $ignore_pattern
 	 */
-	private $ignore_option_pattern;
+	private $ignore_pattern;
 
 	/**
 	 * @var bool $is_valid_detector
@@ -380,11 +380,11 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 * @return string|false
 	 */
 	private function get_ignore_option_pattern() {
-		if ( ! isset( $this->ignore_option_pattern ) ) {
-			$this->ignore_option_pattern = $this->apply_filters( 'ignore_option_pattern' );
+		if ( ! isset( $this->ignore_pattern ) ) {
+			$this->ignore_pattern = $this->apply_filters( 'ignore_option_pattern' );
 		}
 
-		return $this->ignore_option_pattern;
+		return $this->ignore_pattern;
 	}
 
 	/**
