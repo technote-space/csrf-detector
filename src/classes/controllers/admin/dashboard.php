@@ -28,7 +28,6 @@ class Dashboard extends Base {
 	protected function get_setting_list() {
 		return [
 			'shutdown_if_detected',
-			'csrf_mail_to',
 			'target_commands' => [
 				'form'    => 'multi_select',
 				'options' => $this->app->array->combine( $this->app->string->explode( $this->app->setting->get_setting( 'target_commands', true )['default'] ), null ),

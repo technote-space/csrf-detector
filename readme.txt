@@ -3,8 +3,8 @@ Contributors: technote0space
 Tags: CSRF, security
 Requires at least: 3.9.3
 Requires PHP: 5.6
-Tested up to: 5.2
-Stable tag: 0.0.20
+Tested up to: 5.2.3
+Stable tag: 0.0.21
 Donate link: https://paypal.me/technote0space
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -31,5 +31,12 @@ This plugin needs PHP5.6 or higher.
 
 == Upgrade Notice ==
 
+= 0.0.21 =
+* GitHub Actions の導入 [詳細](https://github.com/technote-space/csrf-detector/issues/46)
+* 検知したときのメール送信先 をダッシュボードから削除 [詳細](https://github.com/technote-space/csrf-detector/issues/45)
+* [すべての差分](https://github.com/technote-space/csrf-detector/pull/50)
+
 == Changelog ==
 
+= 0.0.21 (2019/9/8) =
+* [v0.0.21](https://github.com/technote-space/csrf-detector/releases/tag/v0.0.21)
