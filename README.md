@@ -133,6 +133,13 @@ add_action( 'csrf_detector/csrf_detected', function ( $query, $backtrace, $targe
   * init アクションより後が監視対象であるため、プラグインの読み込みと同時に更新するようなプラグインは検出できません
 * 管理画面側の監視対象は `add_submenu_page` や `add_options_page` などを使用して追加されたページ（プラグインやテーマによって追加されたページ）です。
 
+## このプラグインで検出した脆弱性
+- 公式プラグイン 2件
+  - [Check Copy Contents(CCC)](https://wordpress.org/plugins/check-copy-contentsccc/)
+  - [Pretty Links](https://wordpress.org/plugins/pretty-link/)
+- 非公式無料テーマ 1件
+- 非公式有料テーマ 1件
+
 ## Author
 [GitHub (Technote)](https://github.com/technote-space)  
 [Blog](https://technote.space)
