@@ -55,12 +55,6 @@
     "phpmd": [
       "phpmd ./src/,./configs/ text phpmd.xml"
     ],
-    "phpunit": [
-      "phpunit --stop-on-failure --colors=always"
-    ],
-    "phpunit:no": [
-      "@phpunit --no-coverage"
-    ],
     "coveralls": [
       "php-coveralls -v"
     ],
