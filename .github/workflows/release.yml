@@ -8,7 +8,6 @@ name: Release
 jobs:
   releases:
     name: Upload build files
-    needs: test
     runs-on: ubuntu-latest
     env:
       CI: 1
