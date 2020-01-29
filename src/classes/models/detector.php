@@ -436,6 +436,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 * @return string|false
 	 */
 	private function get_target_plugin_or_theme( $backtrace ) {
+		$matches = null;
 		foreach ( $backtrace as $value ) {
 			if ( isset( $value['file'] ) && preg_match( '#/(themes|plugins)/([^/]+)/#', $value['file'], $matches ) ) {
 				$target = substr( $matches[1], 0, -1 );
