@@ -105,7 +105,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 	 * @return string
 	 */
 	private function check_query( $query ) {
-		if ( preg_match( '/^SHOW FULL COLUMNS FROM\s/', $query ) ) {
+		if ( preg_match( '/\ASHOW FULL COLUMNS FROM\s/', $query ) ) {
 			return $query;
 		}
 
@@ -407,7 +407,7 @@ class Detector implements \WP_Framework_Core\Interfaces\Singleton, \WP_Framework
 			$this->do_action( 'csrf_detected', $query, $backtrace, $target, $this->app, $this );
 
 			if ( $this->apply_filters( 'shutdown_if_detected' ) ) {
-				WP_Framework::wp_die( array_map( 'esc_html', [ $this->translate( 'CSRF detected' ), $target, $query ] ), __FILE__, __LINE__, '', false );
+				WP_Framework::kill( array_map( 'esc_html', [ $this->translate( 'CSRF detected' ), $target, $query ] ), __FILE__, __LINE__, '', false );
 			}
 		}
 	}
