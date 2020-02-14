@@ -13,9 +13,12 @@ CSRFを検知するプラグインです。
 
 [最新バージョン](https://github.com/technote-space/csrf-detector/releases/latest/download/release.zip)
 
+## Table of Contents
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
+<details>
+<summary>Details</summary>
 
 - [要件](#%E8%A6%81%E4%BB%B6)
 - [スクリーンショット](#%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88)
@@ -35,10 +38,11 @@ CSRFを検知するプラグインです。
   - [管理画面以外 かつ GETメソッドを除外するかどうか (詳細設定)](#%E7%AE%A1%E7%90%86%E7%94%BB%E9%9D%A2%E4%BB%A5%E5%A4%96-%E3%81%8B%E3%81%A4-get%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E9%99%A4%E5%A4%96%E3%81%99%E3%82%8B%E3%81%8B%E3%81%A9%E3%81%86%E3%81%8B-%E8%A9%B3%E7%B4%B0%E8%A8%AD%E5%AE%9A)
 - [アクションの実行](#%E3%82%A2%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E5%AE%9F%E8%A1%8C)
 - [注意事項](#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85)
-- [このプラグインで検出した脆弱性](#%E3%81%93%E3%81%AE%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%A4%9C%E5%87%BA%E3%81%97%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7)
+- [このプラグインで検出した脆弱性の例](#%E3%81%93%E3%81%AE%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%A7%E6%A4%9C%E5%87%BA%E3%81%97%E3%81%9F%E8%84%86%E5%BC%B1%E6%80%A7%E3%81%AE%E4%BE%8B)
 - [Author](#author)
 - [プラグイン作成用フレームワーク](#%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E4%BD%9C%E6%88%90%E7%94%A8%E3%83%95%E3%83%AC%E3%83%BC%E3%83%A0%E3%83%AF%E3%83%BC%E3%82%AF)
 
+</details>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## 要件
