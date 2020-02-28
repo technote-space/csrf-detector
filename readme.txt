@@ -4,7 +4,7 @@ Tags: CSRF, security
 Requires at least: 3.9.3
 Requires PHP: 5.6
 Tested up to: 5.3
-Stable tag: 0.0.27
+Stable tag: 0.1.0
 Donate link: https://paypal.me/technote0space
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
