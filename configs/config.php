@@ -11,6 +11,10 @@ if ( ! defined( 'CSRF_DETECTOR' ) ) {
 }
 
 return [
+
+	// required wordpress version
+	'required_wordpress_version'     => '5.0',
+
 	// update
 	'update_info_file_url'           => 'https://raw.githubusercontent.com/technote-space/csrf-detector/master/update.json',
 
